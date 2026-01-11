@@ -71,4 +71,11 @@ Zusätzliche Kontrollen für die Hardware:
 
 Im unteren Bereich finden Sie das **Terminal**. Hier können Sie unter **Individueller String** eigene G-Code Befehle eingeben und mit Senden direkt an die Maschine schicken. Das Feld **Empfangen** zeigt die Antwort der Hardware an.
 
+7\. AutoResponser
+-----------------
+
+Der AutoResponser simuliert einen MKS TinyBee und antwortet auf die GCodes G40 und M119 detailiert und auf alle Anderen mit "ok".
+In der .bat Datei kann die serielle Schnittstelle als Argument mitgegeben werden.
+Die Verbindung zu Nadir 3D erfolgt über einen Null-Modem Emulator wie [com0com](https://sourceforge.net/projects/com0com/).
+
 Nadir 3D Scanner Handbuch • 2026 • Alle Rechte vorbehalten.
