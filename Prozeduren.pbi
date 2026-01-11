@@ -608,6 +608,24 @@ Procedure StringGadgetVerifizieren(EventGadget, EventType)
   EndIf
 EndProcedure
 
+Procedure ASAausAktPos(EventType)
+  SetGadgetText(ASAx, GetGadgetText(APx))
+  SetGadgetText(ASAy, GetGadgetText(APy))
+  SetGadgetText(ASAz, GetGadgetText(APz))
+  StringGadgetVerifizieren(ASAx, #PB_EventType_LostFocus)
+  StringGadgetVerifizieren(ASAy, #PB_EventType_LostFocus)
+  StringGadgetVerifizieren(ASAz, #PB_EventType_LostFocus)
+EndProcedure
+
+Procedure ESAausAktPos(EventType)
+  SetGadgetText(ESAx, GetGadgetText(APx))
+  SetGadgetText(ESAy, GetGadgetText(APy))
+  SetGadgetText(ESAz, GetGadgetText(APz))
+  StringGadgetVerifizieren(ESAx, #PB_EventType_LostFocus)
+  StringGadgetVerifizieren(ESAy, #PB_EventType_LostFocus)
+  StringGadgetVerifizieren(ESAz, #PB_EventType_LostFocus)
+EndProcedure
+
 Procedure EndschalterAbfragen(EventType)
   Ergebnis.s = SendRec2(#get_endstop_status)
   ;Bekomme zurück:
@@ -957,8 +975,8 @@ CompilerIf #PB_Compiler_IsMainFile
   End
 CompilerEndIf
 ; IDE Options = PureBasic 6.21 (Windows - x64)
-; CursorPosition = 28
-; FirstLine = 12
+; CursorPosition = 627
+; FirstLine = 528
 ; Folding = --v-----6----
 ; EnableXP
 ; DPIAware

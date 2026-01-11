@@ -227,3 +227,4 @@ End
 ; EnableXP
 ; DPIAware
 ; UseIcon = Icons\Github-Octicons-Goal-16.ico
+; Executable = Nadir3D.exe

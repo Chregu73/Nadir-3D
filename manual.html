@@ -2,134 +2,144 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Benutzerhandbuch: Nadir 3D Oberflächen-Scanner</title>
+    <title>Gesamtdokumentation - Nadir 3D Scanner</title>
     <style>
-        :root { --main: #2c3e50; --blue: #2980b9; --orange: #e67e22; --light: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; color: #333; margin: 0; background: var(--light); }
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px; }
-        
-        header { background: var(--main); color: white; padding: 40px; text-align: center; border-bottom: 6px solid var(--orange); }
-        
-        h2 { color: var(--main); border-bottom: 2px solid #bdc3c7; padding-bottom: 10px; margin-top: 40px; }
-        h3 { color: var(--blue); margin-top: 25px; }
-
-        .btn { 
-            display: inline-block; 
-            background: #e0e0e0; 
-            border: 1px solid #999; 
-            border-radius: 4px; 
-            padding: 3px 12px; 
-            font-size: 0.9em; 
-            font-weight: bold; 
-            box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-            color: #000;
-            margin: 2px;
+        :root { --main-blue: #1a5276; --action-orange: #e67e22; --bg-gray: #f4f7f6; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: var(--text); max-width: 1200px; margin: 0 auto; padding: 40px; background: var(--bg-gray); }
+        header { background: var(--main-blue); color: white; padding: 50px; border-radius: 10px; text-align: center; margin-bottom: 40px; border-bottom: 8px solid var(--action-orange); }
+        h2 { color: var(--main-blue); border-bottom: 3px solid var(--main-blue); padding-bottom: 10px; margin-top: 40px; text-transform: uppercase; }
+        h3 { color: #2980b9; border-left: 5px solid var(--action-orange); padding-left: 15px; margin-top: 30px; }
+        .button-ui { 
+            display: inline-block; background: linear-gradient(to bottom, #fff 0%, #e0e0e0 100%);
+            border: 1px solid #888; border-radius: 4px; padding: 5px 15px; 
+            font-size: 0.9em; font-weight: bold; color: #000; box-shadow: 1px 1px 3px rgba(0,0,0,0.15); margin: 2px;
         }
-
-        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th { background: #ecf0f1; text-align: left; padding: 12px; border-bottom: 2px solid #ccc; }
-        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: top; }
-
-        .step-box { background: #fff3e0; border-left: 6px solid var(--orange); padding: 20px; margin: 20px 0; }
-        .scad-box { background: #e3f2fd; border-left: 6px solid var(--blue); padding: 20px; margin: 20px 0; }
-        
+        th { background: #f2f2f2; text-align: left; padding: 15px; border-bottom: 3px solid #ccc; }
+        td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: top; }
         .highlight { color: #c0392b; font-weight: bold; }
-        .info-text { font-size: 0.95em; color: #555; }
+        .scad-workflow { background: #e8f4fd; border: 2px solid #2980b9; padding: 30px; border-radius: 10px; }
+        .info-box { background: #eafaf1; border-left: 6px solid #27ae60; padding: 20px; margin: 20px 0; }
+        kbd { background: #333; color: #fff; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>NADIR 3D SCANNER</h1>
-    <p>Bedienungsanleitung für Software & Visualisierung</p>
+    <h1>NADIR 3D SCANNER - MASTER-DOKUMENTATION</h1>
+    <p>Vollständige Referenz für Hardware-Steuerung, Scan-Logik und 3D-Rekonstruktion</p>
 </header>
 
-<div class="container">
-
-    <section class="card">
-        <h2>1. Vorbereitung & Verbindung</h2>
-        <p>Bevor ein Scan gestartet werden kann, muss die Kommunikation zur Hardware hergestellt werden:</p>
-        <ul>
-            <li>Öffnen Sie <strong>Einstellungen</strong> -> <span class="btn">serielle Schnittstelle</span> und wählen Sie den korrekten COM-Port aus.</li>
-            <li>Klicken Sie auf <span class="btn">Homing</span>. Die Maschine fährt alle Achsen an die Referenzschalter. <br>
-            <span class="highlight">Wichtig:</span> Ohne Homing ist keine präzise Positionierung möglich.</li>
-        </ul>
-    </section>
-
-    <section class="card">
-        <h2>2. Den Scan-Bereich definieren</h2>
-        <p>Sie müssen der Software mitteilen, wo das Objekt liegt. Dies geschieht über zwei Eckpunkte:</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>Einstellung</th>
-                    <th>Aktion</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Anfang Scan-Area</strong></td>
-                    <td>Fahren Sie den Kopf zur vorderen linken Ecke des Objekts. Klicken Sie auf <span class="btn">Aus aktueller Position übernehmen</span> und danach auf <span class="btn">Speichern</span>.</td>
-                </tr>
-                <tr>
-                    <td><strong>Ende Scan-Area</strong></td>
-                    <td>Fahren Sie zur hinteren rechten Ecke. Klicken Sie auf <span class="btn">Aus aktueller Position übernehmen</span> und danach auf <span class="btn">Speichern</span>.</td>
-                </tr>
-                <tr>
-                    <td><strong>Hierher fahren</strong></td>
-                    <td>Nutzen Sie diese Buttons neben den Koordinaten, um die gespeicherten Eckpunkte zur Kontrolle automatisch anzufahren.</td>
-                </tr>
-            </tbody>
-        </table>
-    </section>
-
-    <section class="card">
-        <h2>3. Scan-Parameter einstellen</h2>
-        <p>Die Detailgenauigkeit und Dauer des Scans werden hier gesteuert:</p>
-        <ul>
-            <li><strong>Scan-Auflösung:</strong> Wählen Sie per Button die Schrittweite (<span class="btn">0.10mm</span> bis <span class="btn">1.00mm</span>). Die <strong>Anzahl Scan-Punkte</strong> und die <strong>Erwartete Zeit</strong> aktualisieren sich automatisch.</li>
-            <li><strong>Mäander Scan:</strong> Aktivieren Sie dieses Häkchen, damit der Scanner im Zick-Zack fährt (spart ca. 30% Zeit).</li>
-            <li><strong>Homing vor Scan:</strong> Empfohlen, um sicherzustellen, dass die Maschine vor einem langen Lauf perfekt kalibriert ist.</li>
-            <li><strong>Achsenreihenfolge:</strong> Bestimmt, ob die Maschine erst Zeilen oder erst Spalten abarbeitet.</li>
-        </ul>
-    </section>
-
-    <section class="scad-box">
-        <h2>4. Live-Visualisierung in OpenSCAD</h2>
-        <p>Um das Ergebnis während des Scans in 3D zu sehen, folgen Sie exakt diesem Ablauf:</p>
-        <div class="step-box">
-            <strong>Schritt 1:</strong> Klicken Sie im Scanner-Programm auf <span class="btn">surface.scad erzeugen</span>.<br>
-            <strong>Schritt 2:</strong> Starten Sie das Programm <strong>OpenSCAD</strong> manuell auf Ihrem Rechner.<br>
-            <strong>Schritt 3:</strong> Öffnen Sie in OpenSCAD die Datei <code>surface.scad</code> aus Ihrem Projektverzeichnis.<br>
-            <strong>Schritt 4:</strong> Aktivieren Sie in OpenSCAD im Menü <strong>Design</strong> die Option <strong>Automatic Reload and Preview</strong>.<br>
-            <strong>Schritt 5:</strong> Aktivieren Sie im Scanner die Checkbox <strong>OpenSCAD aktualisieren</strong>.
-        </div>
-        <p class="info-text">Sobald der Scan läuft, sendet das Programm nach jedem Messpunkt (oder jeder Zeile) ein Signal. OpenSCAD bemerkt dies und baut das 3D-Modell in Echtzeit vor Ihren Augen auf.</p>
-    </section>
-
-    <section class="card">
-        <h2>5. Experten-Funktionen & Sicherheit</h2>
-        <p>Zusätzliche Kontrollen für die Hardware:</p>
-        <ul>
-            <li><span class="btn">Z bis Ende Scan-Area fahren</span>: Hebt den Sensor sicher über das Objekt an.</li>
-            <li><span class="btn">Scan</span> (neben der Position): Führt eine einzelne Testmessung durch.</li>
-            <li><span class="btn">Endschalter abfragen</span>: Prüft, ob die Maschine einen Anschlag berührt oder ein Fehler vorliegt.</li>
-            <li><span class="btn">Motoren abschalten</span>: Schaltet den Strom der Motoren ab (z.B. zum Abkühlen oder manuellem Verschieben).</li>
-            <li><span class="btn">max. Geschw. einstellen</span>: Überträgt die eingetragenen Limits an die Motorsteuerung.</li>
-        </ul>
-    </section>
-
-    <section class="card">
-        <h2>6. Manueller Befehlsversand</h2>
-        <p>Im unteren Bereich finden Sie das <strong>Terminal</strong>. Hier können Sie unter <strong>Individueller String</strong> eigene G-Code Befehle eingeben und mit <span class="btn">Senden</span> direkt an die Maschine schicken. Das Feld <strong>Empfangen</strong> zeigt die Antwort der Hardware an.</p>
-    </section>
-
+<div class="card">
+    <h2>1. Datei- und Systemeinstellungen</h2>
+    <p>Die Steuerung erfolgt über das Hauptmenü und die serielle Konfiguration.</p>
+    <ul>
+        <li><strong>Menü Datei:</strong> <span class="button-ui">Laden</span> und <span class="button-ui">Speichern</span> von Projektdateien sowie <span class="button-ui">Beenden</span> der Software.</li>
+        <li><strong>Menü Einstellungen:</strong> Zugriff auf die <span class="button-ui">serielle Schnittstelle</span> zur Wahl von COM-Port und Baudrate.</li>
+        <li><strong>Menü Hilfe:</strong> Schneller Zugriff auf <span class="button-ui">G-Codes</span> Referenzen und Versionsinfos.</li>
+        <li><strong>Statusleiste:</strong> Zeigt den aktuellen Scan-Fortschritt in Prozent sowie Systemmeldungen.</li>
+    </ul>
 </div>
 
-<footer style="background: var(--main); color: white; text-align: center; padding: 20px; font-size: 0.8em;">
-    Nadir 3D Scanner Handbuch &bull; 2026 &bull; Alle Rechte vorbehalten.
+<div class="card">
+    <h2>2. Achsen-Kontrolle & Positions-Management</h2>
+    <p>Verwaltung der physischen Hardware-Koordinaten für X, Y und Z.</p>
+    <table>
+        <tr>
+            <th>Bedienelement</th>
+            <th>Funktion & Technische Logik</th>
+        </tr>
+        <tr>
+            <td><strong>Aktuelle Position</strong></td>
+            <td>Echtzeitanzeige der Koordinaten. Werte können manuell überschrieben werden, um Ziele für <span class="button-ui">Hierher fahren</span> zu definieren.</td>
+        </tr>
+        <tr>
+            <td><span class="button-ui">Homing</span></td>
+            <td>Referenzfahrt aller Achsen. Setzt das interne Koordinatensystem auf Null. <span class="highlight">Zwingend vor Scan-Start!</span></td>
+        </tr>
+        <tr>
+            <td><span class="button-ui">Scan</span> (Einzelpunkt)</td>
+            <td>Führt an der aktuellen Position eine Einzelmessung durch und gibt den Z-Wert im Terminal aus.</td>
+        </tr>
+        <tr>
+            <td><span class="button-ui">Z bis Ende Scan-Area fahren</span></td>
+            <td>Hebt die Z-Achse auf die unter "Ende Scan-Area" definierte Sicherheitshöhe. Schützt vor Kollisionen beim Positionieren.</td>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <h2>3. Definition der Scan-Area (Raster-Setup)</h2>
+    <p>Festlegung des räumlichen Bereichs und der Auflösung für die X- und Y-Achse.</p>
+    <h3>Eckpunkte definieren</h3>
+    <p>Nutzen Sie die Buttons <span class="button-ui">Aus aktueller Position übernehmen</span> bei <strong>Anfang Scan-Area</strong> und <strong>Ende Scan-Area</strong>, um die physische Position des Scankopfes als Bereichsgrenze zu speichern. Bestätigen Sie jeden Punkt mit <span class="button-ui">Speichern</span>.</p>
+
+    <h3>Auflösung und Messung</h3>
+    <ul>
+        <li><strong>Scan-Auflösung (X/Y):</strong> Schrittweite der Motoren. Wählbar über <span class="button-ui">0.10mm</span>, <span class="button-ui">0.20mm</span>, <span class="button-ui">0.50mm</span> oder <span class="button-ui">1.00mm</span>.</li>
+        <li><strong>Z-Höhenmessung:</strong> Die Z-Achse nutzt keine Rasterauflösung. An jedem X/Y-Punkt wird der Befehl <code>M119</code> gesendet, um den präzisen Höhendatenpunkt des Sensors zu erfassen.</li>
+        <li><strong>Grösse Scan-Area:</strong> Berechnet automatisch die Distanz zwischen Start- und Endpunkt.</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h2>4. Erweitertes Scan-Verfahren</h2>
+    <p>Optimierung des Zeitaufwands und der Datensicherheit.</p>
+    <div class="info-box">
+        <strong>Mäander Scan:</strong> Wenn aktiv, fährt der Scanner im Zick-Zack-Modus. Nach Abschluss einer Zeile rückt die Nebenachse ein und die Hauptachse scannt in entgegengesetzter Richtung zurück. Dies eliminiert zeitaufwendige Leerfahrten.
+    </div>
+    <ul>
+        <li><strong>Homing vor Scan:</strong> Führt unmittelbar vor dem ersten Messpunkt eine Kalibrierung durch.</li>
+        <li><strong>Achsenreihenfolge:</strong> Auswahl über das Dropdown-Menü (z.B. X-Y oder Y-X), um die Priorität der Scanlinien festzulegen.</li>
+        <li><strong>Erwartete Zeit:</strong> Dynamische Berechnung der Scandauer basierend auf Auflösung, Fläche und Motorgeschwindigkeit.</li>
+    </ul>
+</div>
+
+<div class="scad-workflow">
+    <h2>5. Live-Visualisierung in OpenSCAD</h2>
+    <p>Die Software nutzt das <code>surface()</code>-Kommando von OpenSCAD zur 3D-Darstellung. Da OpenSCAD Daten über den <code>file</code>-Parameter einliest, ist ein spezieller Workflow nötig.</p>
+    
+    <h3>Technisches Speicherverfahren (Flush-Logik)</h3>
+    <p>Um die Performance zu maximieren und Schreibfehler zu vermeiden, nutzt das Programm ein zeilenbasiertes Speicherverfahren:</p>
+    <ol>
+        <li>Messpunkte werden im Arbeitsspeicher gesammelt.</li>
+        <li>Nach Abschluss einer <strong>vollständigen Scan-Linie</strong> (im Mäander- oder Normalmodus) wird die <code>.dat</code>-Datei aktualisiert.</li>
+        <li>Der Befehl <code>Flush</code> erzwingt das physikalische Schreiben auf die Festplatte.</li>
+        <li>Parallel dazu wird der Zeitstempel der <code>.scad</code>-Datei aktualisiert ("Touch").</li>
+    </ol>
+
+    <h3>Schritte zur Aktivierung:</h3>
+    <ol>
+        <li><span class="button-ui">surface.scad erzeugen</span>: Erstellt die Brückendatei, die auf Ihre <code>.dat</code>-Datei verweist.</li>
+        <li><strong>OpenSCAD starten:</strong> Laden Sie die <code>surface.scad</code>.</li>
+        <li><strong>Echtzeit-View:</strong> Aktivieren Sie in OpenSCAD unter <code>Design</code> die Option <kbd>Automatic Reload and Preview</kbd>.</li>
+        <li><strong>Verbindung:</strong> Aktivieren Sie im Scanner <strong>OpenSCAD aktualisieren</strong>. Die 3D-Ansicht baut sich nun <span class="highlight">Linie für Linie</span> live auf.</li>
+    </ol>
+</div>
+
+<div class="card">
+    <h2>6. Motoren-Setup & Sicherheitsfunktionen</h2>
+    <p>Konfiguration der physikalischen Grenzwerte der Schrittmotoren.</p>
+    <ul>
+        <li><strong>max. Geschw. / max. Beschl.:</strong> Eingabe der mm/sec und mm/s² Werte pro Achse.</li>
+        <li><span class="button-ui">max. Geschw. einstellen</span> / <span class="button-ui">max. Beschl. einstellen</span>: Sendet die Parameter an den Controller. Nur aktiv, wenn die Checkboxen "senden" markiert sind.</li>
+        <li><span class="button-ui">Endschalter abfragen</span>: Führt eine Diagnose der Hardware-Stopps durch.</li>
+        <li><span class="button-ui">Motoren abschalten</span>: Schaltet die Endstufen stromlos. Wichtig für manuelle Justierung oder Notstopp.</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h2>7. Kommunikations-Terminal</h2>
+    <p>Direkte Schnittstelle zum G-Code-Controller.</p>
+    <ul>
+        <li><strong>Gesendet / Empfangen:</strong> Überwachung des Datenverkehrs. Rückgabewerte des Z-Sensors erscheinen hier unmittelbar nach dem <code>M119</code> Befehl.</li>
+        <li><strong>Individueller String:</strong> Drei Textfelder für benutzerdefinierte Befehlsfolgen. Senden über den jeweiligen <span class="button-ui">Senden</span>-Button.</li>
+    </ul>
+</div>
+
+<footer>
+    Nadir 3D Scanner - Dokumentationsstand 2026 | Entwickelt für PureBasic & OpenSCAD Visualisierung
 </footer>
 
 </body>
