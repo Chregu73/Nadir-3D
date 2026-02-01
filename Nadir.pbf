@@ -1,4 +1,4 @@
-﻿; Form Designer for PureBasic - 6.21
+﻿; Form Designer for PureBasic - 6.30
 ; Warning: this file uses a strict syntax, if you edit it, make sure to respect the Form Designer limitation or it won't be opened again.
 
 ;
@@ -59,7 +59,7 @@ Declare individuellerString1Senden(EventType)
 Declare ErzeugeSCAD(EventType)
 
 Procedure OpenWindowScanner(x = 0, y = 0, width = 736, height = 624)
-  WindowScanner = OpenWindow(#PB_Any, x, y, width, height, "Nadir 3D", #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered | #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered)
+  WindowScanner = OpenWindow(#PB_Any, x, y, width, height, "Nadir 3D", #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered)
   AddKeyboardShortcut(WindowScanner, #PB_Shortcut_F1, #Hilfe)
 
   CreateStatusBar(0, WindowID(WindowScanner))
@@ -146,7 +146,9 @@ Procedure OpenWindowScanner(x = 0, y = 0, width = 736, height = 624)
   mGs = CheckBoxGadget(#PB_Any, 576, 232, 136, 20, "max. Geschw. senden")
   mBs = CheckBoxGadget(#PB_Any, 576, 256, 136, 20, "max. Beschl. senden")
   mGt = TextGadget(#PB_Any, 16, 232, 104, 20, "max. Geschw.:")
+  GadgetToolTip(mGt, "in [mm/s]")
   mBt = TextGadget(#PB_Any, 16, 256, 104, 20, "max. Beschl.:")
+  GadgetToolTip(mBt, "in [mm/s^2]")
   mGe = ButtonGadget(#PB_Any, 352, 232, 144, 20, "max. Geschw. einstellen")
   mBe = ButtonGadget(#PB_Any, 352, 256, 144, 20, "max. Beschl. einstellen")
   mGx = StringGadget(#PB_Any, 128, 232, 64, 20, "5.00")

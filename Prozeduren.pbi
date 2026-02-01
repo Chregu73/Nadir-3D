@@ -236,7 +236,14 @@ Procedure ErzeugeSCAD(EventType)
     WriteStringN(0, "y_scale = "+GetGadgetText(SAy)+";")
     WriteStringN(0, "z_scale = 1;")
     WriteStringN(0, "")
-    WriteStringN(0, "mirror([1,0,0])")
+    Select GetGadgetState(ARFc)
+      Case 0 ;Zuerst X-Achse, dann Y-Achse
+        WriteStringN(0, "rotate([0,0,0])")
+        WriteStringN(0, "mirror([0,0,0])")
+      Case 1 ;Zuerst Y-Achse, dann X-Achse
+        WriteStringN(0, "rotate([0,0,-90])")
+        WriteStringN(0, "mirror([1,0,0])")
+    EndSelect
     WriteStringN(0, "scale([x_scale, y_scale, z_scale])")
     WriteStringN(0, "surface(file = "+#DOUBLEQUOTE$+"surface.dat"+
                     #DOUBLEQUOTE$+", center = false);")
@@ -602,8 +609,12 @@ Procedure StringGadgetVerifizieren(EventGadget, EventType)
       SetGadgetText(ASPs, StrF(anzahlPunkte.f))
       erwarteteZeit.f = (ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))) * anzahlPunkte.f
       ;hier ist die erwartete Zeit = der Scanhöhe als Sekunden, evtl. mit Korrekturfaktor:
-      erwarteteZeit.f * 1
+      erwarteteZeit.f * 2.5
       SetGadgetText(EZs, KonvertiereZuZeit(erwarteteZeit.f))
+      ;Grösse Scan-Area:
+      SetGadgetText(GSAx, StrF((ValF(GetGadgetText(ESAx)) - ValF(GetGadgetText(ASAx))), 2))
+      SetGadgetText(GSAy, StrF((ValF(GetGadgetText(ESAy)) - ValF(GetGadgetText(ASAy))), 2))
+      SetGadgetText(GSAz, StrF((ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))), 2))
     EndIf
   EndIf
 EndProcedure
@@ -752,14 +763,16 @@ Procedure.f ScanM119(x.i, y.i, z.f)
     EndIf
     ;jetzt +1mm, bei ebeneren Objekten kleiner, geht dann schneller!
     ;bei grossen Höhenunterschieden gehen grössere Zahlen schneller!
-    relKrd.f(#z) + 1
+    ;relKrd.f(#z) + 1
+    ;ausprobieren mit plus Auflösung Z
+    relKrd.f(#z) + al.f
     move(x.i, y.i, relKrd.f(#z))
   Wend
   While Not EndschalterAbfragen(EventType)
     If relKrd.f(#z) < 0
       Break
     EndIf
-    relKrd.f(#z) - al.f ;- Auflösung Z
+    relKrd.f(#z) - al.f ;minus Auflösung Z
     move(x.i, y.i, relKrd.f(#z))
   Wend
   ProcedureReturn relKrd.f(#z)
@@ -782,10 +795,18 @@ Procedure.f ScanKombiniert(x.i, y.i, z.f)
   ProcedureReturn wert.f
 EndProcedure
 
+;-Dateiformat .dat für OpenSCAD:
+;Das Format für textbasierte Höhenkarten ist eine Zahlenmatrix, welche die
+;Höhenwerte für spezifische Punkte darstellt. Die Zeilen werden in Richtung
+;der Y-Achse abgebildet, die Spalten in Richtung der X-Achse, wobei zwischen
+;benachbarten Zeilen und Spalten jeweils ein Schritt von einer Einheit erfolgt.
+;Die Zahlen müssen durch Leerzeichen oder Tabulatoren getrennt werden.
+;Leerzeilen sowie Zeilen, die mit einem #-Zeichen beginnen, werden ignoriert.
+
 Procedure Scannen()
   If GetToolBarButtonState(0, #Start)
     If serialPortOpen.i
-      If CreateFile(0, GetGadgetText(DNs))  ;neue Textdatei erstellen
+      If CreateFile(0, GetGadgetText(DNs)) ;neue Textdatei erstellen
         WriteStringN(0, "#surface.dat")
         WriteStringN(0, "#Aufloesung X-Achse: "+GetGadgetText(SAx)+"mm")
         WriteStringN(0, "#Aufloesung Y-Achse: "+GetGadgetText(SAy)+"mm")
@@ -811,7 +832,7 @@ Procedure Scannen()
         move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
 
         ;und mit Z auch noch zum Anfang Scan-Area
-        absKrd.f(#z) = ValF(GetGadgetText(ESAz))
+        absKrd.f(#z) = ValF(GetGadgetText(ASAz))
         move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
         
         ;Koordinaten auf Null setzen:
@@ -958,8 +979,8 @@ Procedure Scannen()
                  " Y" + StrF(absKrd.f(#y), 2) +
                  " Z" + StrF(absKrd.f(#z), 2))
         SetGadgetText(APx, StrF(absKrd.f(#x), 2))
-        SetGadgetText(APy, StrF(absKrd.f(#x), 2))
-        SetGadgetText(APz, StrF(absKrd.f(#x), 2))
+        SetGadgetText(APy, StrF(absKrd.f(#y), 2))
+        SetGadgetText(APz, StrF(absKrd.f(#z), 2))
       Else
         StatusBarText(0, 2, "Konnte Datei nicht erstellen!")
       EndIf
@@ -974,9 +995,9 @@ CompilerIf #PB_Compiler_IsMainFile
   gcodes(0)
   End
 CompilerEndIf
-; IDE Options = PureBasic 6.21 (Windows - x64)
-; CursorPosition = 627
-; FirstLine = 528
+; IDE Options = PureBasic 6.30 (Windows - x64)
+; CursorPosition = 616
+; FirstLine = 530
 ; Folding = --v-----6----
 ; EnableXP
 ; DPIAware

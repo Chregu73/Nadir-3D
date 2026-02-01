@@ -1,4 +1,4 @@
-﻿; Form Designer for PureBasic - 6.21
+﻿; Form Designer for PureBasic - 6.30
 ; Warning: this file uses a strict syntax, if you edit it, make sure to respect the Form Designer limitation or it won't be opened again.
 
 ;
@@ -15,7 +15,7 @@ Declare SerSetUebernehmen(EventType)
 Declare SerSetAbbrechen(EventType)
 
 Procedure OpenWindowSerial(x = 0, y = 0, width = 232, height = 184)
-  WindowSerial = OpenWindow(#PB_Any, x, y, width, height, "Einstellungen serielle Schnittstelle", #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered | #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered)
+  WindowSerial = OpenWindow(#PB_Any, x, y, width, height, "Einstellungen serielle Schnittstelle", #PB_Window_SystemMenu | #PB_Window_ScreenCentered)
   t0 = TextGadget(#PB_Any, 8, 8, 72, 16, "Port:")
   t1 = TextGadget(#PB_Any, 8, 32, 72, 16, "Baud:")
   t2 = TextGadget(#PB_Any, 8, 56, 72, 16, "Datenbits:")
