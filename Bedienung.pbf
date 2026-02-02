@@ -1,4 +1,4 @@
-﻿; Form Designer for PureBasic - 6.21
+﻿; Form Designer for PureBasic - 6.30
 ; Warning: this file uses a strict syntax, if you edit it, make sure to respect the Form Designer limitation or it won't be opened again.
 
 ;
@@ -52,7 +52,7 @@ Declare Zp1(EventType)
 Declare Zm1(EventType)
 
 Procedure OpenWindowBedienung(x = 0, y = 0, width = 344, height = 344)
-  WindowBedienung = OpenWindow(#PB_Any, x, y, width, height, "Bedienung", #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered | #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered)
+  WindowBedienung = OpenWindow(#PB_Any, x, y, width, height, "Bedienung", #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered)
   Zp10 = ButtonImageGadget(#PB_Any, 152, 8, 40, 40, ImageID(Img_WindowBedienung_0))
   Zp1 = ButtonImageGadget(#PB_Any, 152, 56, 40, 40, ImageID(Img_WindowBedienung_0))
   Zp01 = ButtonImageGadget(#PB_Any, 152, 104, 40, 40, ImageID(Img_WindowBedienung_0))
@@ -154,3 +154,9 @@ Procedure WindowBedienung_Events(event)
   ProcedureReturn #True
 EndProcedure
 
+
+; IDE Options = PureBasic 6.30 (Windows - x64)
+; CursorPosition = 54
+; FirstLine = 15
+; Folding = -
+; EnableXP

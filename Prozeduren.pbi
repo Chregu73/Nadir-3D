@@ -49,6 +49,8 @@ EndProcedure
 Procedure bedienung(EventType)
   If Not IsWindow(WindowBedienung)
     OpenWindowBedienung()
+    ;Fenster immer im Vordergrund, 2.2.2026 Chregu:
+    StickyWindow(WindowBedienung, #True) 
   EndIf
 EndProcedure
 
@@ -80,6 +82,10 @@ Global ComPort.s = "COM1"
 Global ComBaud.l = 115200
 Global serialPortOpen.i
 
+Macro lustigeZeichenWeg(string)
+  LTrim(LTrim(LTrim(string, "\"), "."), "\")
+EndMacro
+
 Procedure comPortOpenClose(Button)
   OpenPreferences("Nadir.ini")
   ComPort.s = ReadPreferenceString("Port", "COM1")
@@ -98,12 +104,14 @@ Procedure comPortOpenClose(Button)
     serialPortOpen.i = OpenSerialPort(0, ComPort.s, ComBaud.l, #PB_SerialPort_NoParity, 8, 1, #PB_SerialPort_NoHandshake, 1024, 1024)
     If serialPortOpen.i > 0
       SerialPortTimeouts(0, 300, 300, 300, 10, 100)
-      StatusBarText(0, 2, LTrim(LTrim(LTrim(ComPort.s, "\"), "."), "\") + " geöffnet")
+      ;StatusBarText(0, 2, LTrim(LTrim(LTrim(ComPort.s, "\"), "."), "\") + " geöffnet")
+      StatusBarText(0, 2, lustigeZeichenWeg(ComPort.s) + " geöffnet")
       ;DisableGadget(Combo_5, 1)
       ;DisableGadget(Text_15, 0)
       ;DisableGadget(Button_6, 0)
     Else
-      StatusBarText(0, 2, ComPort.s + " konnte nicht geöffnet werden")
+      ;StatusBarText(0, 2, ComPort.s + " konnte nicht geöffnet werden")
+      StatusBarText(0, 2, lustigeZeichenWeg(ComPort.s) + " konnte nicht geöffnet werden")
       SetToolBarButtonState(0, Button, 0)
     EndIf
   Else ;wenn nicht gedrückt
@@ -996,8 +1004,8 @@ CompilerIf #PB_Compiler_IsMainFile
   End
 CompilerEndIf
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 791
-; FirstLine = 684
-; Folding = --v-----6----
+; CursorPosition = 107
+; FirstLine = 56
+; Folding = --f-----z----
 ; EnableXP
 ; DPIAware
