@@ -753,10 +753,10 @@ Procedure.f ScanG40(x.f, y.f, z.f)
 EndProcedure
 
 ;z.f ist die Höhe der Scan Area, also oben!
-Procedure.f ScanM119(x.i, y.i, z.f)
+Procedure.f ScanM119(x.f, y.f, z.f)
   Protected al.f = ValF(GetGadgetText(SAz)) ;Auflösung Z
   ;nur mit X und Y zu den Zielkoordinaten fahren ohne Z:
-  move(x.i, y.i, relKrd.f(#z))
+  move(x.f, y.f, relKrd.f(#z))
   While EndschalterAbfragen(EventType)
     If relKrd.f(#z) > z.f
       Break
@@ -766,22 +766,22 @@ Procedure.f ScanM119(x.i, y.i, z.f)
     ;relKrd.f(#z) + 1
     ;ausprobieren mit plus Auflösung Z
     relKrd.f(#z) + al.f
-    move(x.i, y.i, relKrd.f(#z))
+    move(x.f, y.f, relKrd.f(#z))
   Wend
   While Not EndschalterAbfragen(EventType)
     If relKrd.f(#z) < 0
       Break
     EndIf
     relKrd.f(#z) - al.f ;minus Auflösung Z
-    move(x.i, y.i, relKrd.f(#z))
+    move(x.f, y.f, relKrd.f(#z))
   Wend
   ProcedureReturn relKrd.f(#z)
 EndProcedure
 
-Procedure.f ScanKombiniert(x.i, y.i, z.f)
+Procedure.f ScanKombiniert(x.f, y.f, z.f)
   Protected al.f = ValF(GetGadgetText(SAz)) ;Auflösung Z
   ;nur mit X und Y zu den Zielkoordinaten fahren ohne Z:
-  move(x.i, y.i, relKrd.f(#z))
+  move(x.f, y.f, relKrd.f(#z))
   While EndschalterAbfragen(EventType)
     If relKrd.f(#z) > z.f
       Break
@@ -789,7 +789,7 @@ Procedure.f ScanKombiniert(x.i, y.i, z.f)
     ;jetzt +1mm, bei ebeneren Objekten kleiner, geht dann schneller!
     ;bei grossen Höhenunterschieden gehen grössere Zahlen schneller!
     relKrd.f(#z) + 1
-    move(x.i, y.i, relKrd.f(#z))
+    move(x.f, y.f, relKrd.f(#z))
   Wend  
   wert.f = Scan(0)
   ProcedureReturn wert.f
@@ -996,8 +996,8 @@ CompilerIf #PB_Compiler_IsMainFile
   End
 CompilerEndIf
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 616
-; FirstLine = 530
+; CursorPosition = 791
+; FirstLine = 684
 ; Folding = --v-----6----
 ; EnableXP
 ; DPIAware
