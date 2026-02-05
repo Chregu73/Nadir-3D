@@ -35,12 +35,12 @@ Img_WindowScanner_6 = LoadImage(#PB_Any,"Icons\Emey87-Social-Button-G.ico")
 Img_WindowScanner_7 = LoadImage(#PB_Any,"Icons\options+settings+tool+tools+icon-1320191159517500727_32px.ico")
 Img_WindowScanner_8 = LoadImage(#PB_Any,"Icons\settings-131964743801424017_32px.ico")
 
-Declare gcode(Event)
 Declare Beenden(Event)
 Declare Ueber(Event)
 Declare manual(Event)
-Declare gcodes(Event)
+Declare GCodeHelp(Event)
 Declare SerialSettings(Event)
+Declare GCodeSend(Event)
 Declare MotorenAbschalten(EventType)
 Declare maxBeschlEinstellen(EventType)
 Declare Homing(EventType)
@@ -212,12 +212,12 @@ Procedure WindowScanner_Events(event)
         Case #SerielleSchnittstelle
           SerialSettings(EventMenu())
         Case #GCode
-          gcode(EventMenu())
+          GCodeSend(EventMenu())
         Case #Firmware
         Case #Hilfe
           manual(EventMenu())
         Case #GCodes
-          gcodes(EventMenu())
+          GCodeHelp(EventMenu())
         Case #Ueber
           Ueber(EventMenu())
       EndSelect

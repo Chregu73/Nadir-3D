@@ -1,8 +1,8 @@
-﻿Global WindowGCode
+﻿Global WindowGCodeHelp
 ;Hilfe für verschiedene G-Codes anzeigen
-Procedure gcodes(EventType)
-  If Not IsWindow(WindowGCode)
-    WindowGCode = OpenWindow(#PB_Any, 100, 100, 980, 600, "G-Codes", #PB_Window_SystemMenu)
+Procedure GCodeHelp(EventType)
+  If Not IsWindow(WindowGCodeHelp)
+    WindowGCodeHelp = OpenWindow(#PB_Any, 100, 100, 980, 600, "G-Codes", #PB_Window_SystemMenu)
     WebViewGadget(0, 0, 0, 980, 600)
     SetGadgetText(0, "file://" + GetCurrentDirectory() + "gcode.html")
     CompilerIf #PB_Compiler_IsMainFile
@@ -11,22 +11,72 @@ Procedure gcodes(EventType)
       Until Event = #PB_Event_CloseWindow
     CompilerEndIf
   Else
-    SetActiveWindow(WindowGCode)
+    SetActiveWindow(WindowGCodeHelp)
   EndIf
 EndProcedure
 
-Procedure WindowGCode_Events(Event)
+Procedure WindowGCodeHelp_Events(Event)
   Select event
     Case #PB_Event_CloseWindow
-      CloseWindow(WindowGCode)
+      CloseWindow(WindowGCodeHelp)
   EndSelect
 EndProcedure
 
-Procedure GCode(EventType)
+
+Declare.s SendRec2(text.s, timeoutMS.i = 20000)
+Global WindowGCodeSend
+;verschiedene G-Codes senden
+Procedure NadirActionCallback(JsonParameters$)
+  ;Da wir im JS nur einen Wert senden, ist JsonParameters$ 
+  ;einfach ein JSON-String in eckigen Klammern, z.B.: ["G1 X10 Y50 F100"]
+  Protected JSON = ParseJSON(#PB_Any, JsonParameters$)
+  If JSON
+    ;Den fertigen String direkt aus dem ersten Element des JSON-Arrays holen
+    ;Protected GCode.s = GetJSONString(GetJSONElement(JSONValue(JSON), 0))
+    ;Debug "Sende an Drucker: " + GCode.s
+    ; Neuen Befehl hinten an die Liste hängen
+    AddElement(GCodeQueue())
+    GCodeQueue() = GetJSONString(GetJSONElement(JSONValue(JSON), 0))
+    PostEvent(#Event_Nadir_GCode, WindowGCodeSend, 0, 0)
+    ;Hier kommt dein Sende-Befehl hin:
+    ;RTrim(GCode.s, " ")
+    ;SendRec2(GCode.s)
+    FreeJSON(JSON)
+  EndIf
+  ProcedureReturn 0
 EndProcedure
 
-Global WindowManual
+Procedure GCodeSend(EventType)
+  If Not IsWindow(WindowGCodeSend)
+    WindowGCodeSend = OpenWindow(0, 0, 0, 700, 700, "Nadir External UI", #PB_Window_SystemMenu | #PB_Window_ScreenCentered)
+    ;Wichtig: WebView2 (Windows) oder WebKit (Mac/Linux)
+    WebViewGadget(0, 0, 0, 700, 700)
+    ;Verbindung herstellen BEVOR wir die Seite laden
+    BindWebViewCallback(0, "nadirCmd", @NadirActionCallback())
+    ;Die externe Datei laden. Wir nutzen 'file://' gefolgt vom Pfad
+    SetGadgetText(0, "file://" + GetCurrentDirectory() + "ui.html")
+    ;Repeat : Until WaitWindowEvent() = #PB_Event_CloseWindow
+  EndIf
+EndProcedure
 
+Procedure WindowGCodeSend_Events(Event)
+  Select event
+    Case #PB_Event_CloseWindow
+      UnbindWebViewCallback(0, "nadirCmd")
+      CloseWindow(WindowGCodeSend)
+    Case #Event_Nadir_GCode
+      FirstElement(GCodeQueue()) ; Den ältesten Befehl holen
+      Protected GCode.s = GCodeQueue()
+      ;Entfernt alle Leerzeichen
+      GCode.s = Trim(GCode, " ")
+      SendRec2(GCode.s)
+      DeleteElement(GCodeQueue()) ; Befehl aus der Liste löschen
+  EndSelect
+EndProcedure
+
+
+Global WindowManual
+;Fenster für Anleitung
 Procedure manual(EventType)
   If Not IsWindow(WindowManual)
     WindowManual = OpenWindow(#PB_Any, 100, 100, 980, 600, "Manual", #PB_Window_SystemMenu)
@@ -49,6 +99,8 @@ Procedure WindowManual_Events(Event)
   EndSelect
 EndProcedure
 
+
+;Fenster für manuelle Bedienung
 Procedure bedienung(EventType)
   If Not IsWindow(WindowBedienung)
     OpenWindowBedienung()
@@ -285,7 +337,7 @@ Procedure.s SendRec(text.s, wiederholen.c = 2000)
       ClearGadgetItems(EMPFs)
       *Puffer = AllocateMemory(1024)
       While AvailableSerialPortInput(SerialPortHandle.i) Or wiederholen.c
-        While WindowEvent() : Wend ; Grafische Updates erzwingen
+        ;While WindowEvent() : Wend ; Grafische Updates erzwingen
         Delay(10) ;warten bis Daten verarbeitet sind und bestätigt wird
         GeleseneBytes.l = ReadSerialPortData(SerialPortHandle.i, *Puffer, 1024)
         If GeleseneBytes.l
@@ -1025,8 +1077,8 @@ CompilerIf #PB_Compiler_IsMainFile
   End
 CompilerEndIf
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 949
-; FirstLine = 854
-; Folding = ---+----n----
+; CursorPosition = 70
+; FirstLine = 42
+; Folding = ---8----f+----
 ; EnableXP
 ; DPIAware

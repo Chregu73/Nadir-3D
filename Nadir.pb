@@ -41,6 +41,12 @@ Enumeration FormMenu
   #T9
 EndEnumeration
 
+Enumeration #PB_Event_FirstCustomValue
+  #Event_Nadir_GCode  ;Erhält automatisch den ersten freien Wert (meist 6000+)
+  #Event_Nadir_Status ;Falls du später noch mehr eigene Events brauchst
+EndEnumeration
+Global NewList GCodeQueue.s() ;Eine Liste als Puffer
+
 XIncludeFile "Nadir.pbf" ;Einbinden der ersten Fenster-Definition
 XIncludeFile "Bedienung.pbf"
 XIncludeFile "SerialSettings.pbf"
@@ -190,8 +196,8 @@ Repeat
               manual(0)
             Case #T8 ;Manuell Achsen fahren
               bedienung(Event)
-            Case #T9 ;G-Codes
-              GCode(Event)
+            Case #T9 ;G-Codes senden
+              GCodeSend(Event)
           EndSelect
         Case #PB_Event_Gadget
           EventGadget = EventGadget()
@@ -201,8 +207,10 @@ Repeat
               StringGadgetVerifizieren(EventGadget, EventType())
           EndSelect
       EndSelect
-    Case WindowGCode
-      WindowGCode_Events(Event)
+    Case WindowGCodeHelp
+      WindowGCodeHelp_Events(Event)
+    Case WindowGCodeSend
+      WindowGCodeSend_Events(Event)
     Case WindowManual
       WindowManual_Events(Event)
     Case WindowBedienung
@@ -224,8 +232,8 @@ ConfigSpeichern()
 End
 
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 129
-; FirstLine = 84
+; CursorPosition = 159
+; FirstLine = 147
 ; Folding = -
 ; EnableXP
 ; DPIAware
