@@ -9,15 +9,17 @@
 
 Global WindowScanner
 
-Global xAchse, yAchse, zAchse, AP_Homing, APt, APx, APy, APz, ASAt, ASAx, ASAy, ASAz, ASA_AaPu, ASAs, ESAt, ESAx, ESAy, ESAz, ESA_AaPu, ESAs, SAx, SAy, SAz, SA1, SAS, SAt, SA2, SA5, SA10, ASA_Hf, ESA_Hf, GSAt, GSAx, GSAy, GSAz, ASPt, ASPs, EZt, EZs, ScVt, ScVc, SpVt, SpVc, DNt, DNs, DNoe, OSx, OSy, OSz, OSS, OSt, OS_AaPu, SFerz, VAFc, AP_Scan, mGs, mBs, mGt, mBt, mGe, mBe, mGx, mBx, mGy, mBy, mGz, mBz, ARFc, ARFt, GESt, EMPFt, EMPFs, Str1Send, GESs, Str1Txt, Str2Send, Str2Txt, Str3Send, Str3Txt, IvSt, MZbESAf, AP_Hf, mGe_Sp, mB_Sp, EsA, Mof, HvS, MaS
+Global xAchse, yAchse, zAchse, AP_Homing, APt, APx, APy, APz, ASAt, ASAx, ASAy, ASAz, ASA_AaPu, ASAs, ESAt, ESAx, ESAy, ESAz, ESA_AaPu, ESAs, SAx, SAy, SAz, SA1, SAS, SAt, SA2, SA5, SA10, ASA_Hf, ESA_Hf, GSAt, GSAx, GSAy, GSAz, ASPt, ASPs, EZt, EZs, ScVt, ScVc, SpVt, SpVc, DNt, DNs, DNoe, OSx, OSy, OSz, OSS, OSt, OS_AaPu, SFerz, VAFc, AP_Scan, mGs, mBs, mGt, mBt, mGe, mBe, mGx, mBx, mGy, mBy, mGz, mBz, ARFc, ARFt, GESt, EMPFt, EMPFs, Str1Send, GESs, Str1Txt, Str2Send, Str2Txt, Str3Send, Str3Txt, IvSt, MZbESAf, AP_Hf, mGe_Sp, mB_Sp, EsA, Mof, HvS, MaS, SFe
 
-Global Img_WindowScanner_0, Img_WindowScanner_1, Img_WindowScanner_2, Img_WindowScanner_3, Img_WindowScanner_4, Img_WindowScanner_5, Img_WindowScanner_6
+Global Img_WindowScanner_0, Img_WindowScanner_1, Img_WindowScanner_2, Img_WindowScanner_3, Img_WindowScanner_4, Img_WindowScanner_5, Img_WindowScanner_6, Img_WindowScanner_7, Img_WindowScanner_8
 
 Enumeration FormMenu
   #Laden
   #Speichern
   #Beenden
   #SerielleSchnittstelle
+  #GCode
+  #Firmware
   #Hilfe
   #GCodes
   #Ueber
@@ -30,7 +32,10 @@ Img_WindowScanner_3 = LoadImage(#PB_Any,"Icons\Open.ico")
 Img_WindowScanner_4 = LoadImage(#PB_Any,"Icons\Save.ico")
 Img_WindowScanner_5 = LoadImage(#PB_Any,"Icons\LogOut.ico")
 Img_WindowScanner_6 = LoadImage(#PB_Any,"Icons\Emey87-Social-Button-G.ico")
+Img_WindowScanner_7 = LoadImage(#PB_Any,"Icons\options+settings+tool+tools+icon-1320191159517500727_32px.ico")
+Img_WindowScanner_8 = LoadImage(#PB_Any,"Icons\settings-131964743801424017_32px.ico")
 
+Declare gcode(Event)
 Declare Beenden(Event)
 Declare Ueber(Event)
 Declare manual(Event)
@@ -75,6 +80,8 @@ Procedure OpenWindowScanner(x = 0, y = 0, width = 736, height = 624)
   MenuItem(#Beenden, "Beenden", ImageID(Img_WindowScanner_5))
   MenuTitle("Einstellungen")
   MenuItem(#SerielleSchnittstelle, "serielle Schnittstelle", ImageID(Img_WindowScanner_2))
+  MenuItem(#GCode, "G-Code senden", ImageID(Img_WindowScanner_7))
+  MenuItem(#Firmware, "Firmware", ImageID(Img_WindowScanner_8))
   MenuTitle("Hilfe")
   MenuItem(#Hilfe, "Hilfe..." + Chr(9) + "F1", ImageID(Img_WindowScanner_0))
   MenuItem(#GCodes, "G-Codes", ImageID(Img_WindowScanner_6))
@@ -140,7 +147,7 @@ Procedure OpenWindowScanner(x = 0, y = 0, width = 736, height = 624)
   OS_AaPu = ButtonGadget(#PB_Any, 352, 208, 200, 20, "Aus aktueller Position übernehmen")
   DisableGadget(OS_AaPu, 1)
   SFerz = ButtonGadget(#PB_Any, 584, 384, 136, 20, "surface.scad erzeugen")
-  VAFc = CheckBoxGadget(#PB_Any, 16, 352, 152, 20, "OpenSCAD aktualisieren")
+  VAFc = CheckBoxGadget(#PB_Any, 168, 352, 152, 20, "OpenSCAD aktualisieren")
   AP_Scan = ButtonGadget(#PB_Any, 416, 88, 40, 20, "Scan")
   GadgetToolTip(AP_Scan, "Aktuelle Position Scannen")
   mGs = CheckBoxGadget(#PB_Any, 576, 232, 136, 20, "max. Geschw. senden")
@@ -187,6 +194,8 @@ Procedure OpenWindowScanner(x = 0, y = 0, width = 736, height = 624)
   HvS = CheckBoxGadget(#PB_Any, 16, 328, 120, 20, "Homing vor Scan")
   MaS = CheckBoxGadget(#PB_Any, 168, 328, 120, 20, "Mäander Scan")
   GadgetToolTip(MaS, "Scant im Zick-Zack, spart das Zurückfahren nach jeder Zeile")
+  SFe = CheckBoxGadget(#PB_Any, 16, 352, 152, 20, "Scanfehler erkennen")
+  GadgetToolTip(SFe, "Wenn der Sensor hängenbleibt, wird durch Rauf- und Runterfahren versucht, den Sensor wieder zu aktivieren")
 EndProcedure
 
 Procedure WindowScanner_Events(event)
@@ -202,6 +211,9 @@ Procedure WindowScanner_Events(event)
           Beenden(EventMenu())
         Case #SerielleSchnittstelle
           SerialSettings(EventMenu())
+        Case #GCode
+          gcode(EventMenu())
+        Case #Firmware
         Case #Hilfe
           manual(EventMenu())
         Case #GCodes

@@ -1,5 +1,5 @@
 ﻿Global WindowGCode
-
+;Hilfe für verschiedene G-Codes anzeigen
 Procedure gcodes(EventType)
   If Not IsWindow(WindowGCode)
     WindowGCode = OpenWindow(#PB_Any, 100, 100, 980, 600, "G-Codes", #PB_Window_SystemMenu)
@@ -20,6 +20,9 @@ Procedure WindowGCode_Events(Event)
     Case #PB_Event_CloseWindow
       CloseWindow(WindowGCode)
   EndSelect
+EndProcedure
+
+Procedure GCode(EventType)
 EndProcedure
 
 Global WindowManual
@@ -684,6 +687,7 @@ Procedure ConfigLaden()
   SetGadgetState(mBy, ReadPreferenceInteger("Maximale Beschleunigung Y", 100))
   SetGadgetState(mBz, ReadPreferenceInteger("Maximale Beschleunigung Z", 20))
   SetGadgetState(mBs, ReadPreferenceInteger("Maximale Beschleunigung senden", #PB_Checkbox_Unchecked))
+  SetGadgetState(SFe, ReadPreferenceInteger("Scanfehler erkennen", #PB_Checkbox_Unchecked))
   SetGadgetState(VAFc, ReadPreferenceInteger("Voransichtsfenster", #PB_Checkbox_Checked))
   SetGadgetState(HvS, ReadPreferenceInteger("Homing vor Scan", #PB_Checkbox_Unchecked))
   SetGadgetState(MaS, ReadPreferenceInteger("Mäander Scan", #PB_Checkbox_Unchecked))
@@ -716,6 +720,7 @@ Procedure ConfigSpeichern()
   WritePreferenceInteger("Maximale Beschleunigung Y", GetGadgetState(mBy))
   WritePreferenceInteger("Maximale Beschleunigung Z", GetGadgetState(mBz))
   WritePreferenceInteger("Maximale Beschleunigung senden", GetGadgetState(mBs))
+  WritePreferenceInteger("Scanfehler erkennen", GetGadgetState(SFe))
   WritePreferenceInteger("Voransichtsfenster", GetGadgetState(VAFc))
   WritePreferenceInteger("Homing vor Scan", GetGadgetState(HvS))
   WritePreferenceInteger("Mäander Scan", GetGadgetState(MaS))
@@ -753,9 +758,16 @@ Procedure ScanAufloesung100(EventType)
   StringGadgetVerifizieren(ASAx, #PB_EventType_LostFocus)
 EndProcedure
 
-Procedure.f ScanG40(x.f, y.f, z.f)
+Procedure.f ScanG30(x.f, y.f, z.f)
   move(x.f, y.f, z.f)
   wert.f = Scan(0)
+  ;wert.f hat nun den gescannten Wert
+  If GetGadgetState(SFe) And (wert.f >= z.f) ;wenn "Scanfehler erkennen" aktiviert
+    move(x.f, y.f, -1) ;tief runterfahren um den Kontaktfehler zu beheben
+    ;Debug "Scanfehler detektiert:"
+    ;Debug wert.f
+    wert.f = Scan(0) ;nochmals scannen
+  EndIf
   move(x.f, y.f, z.f)
   ProcedureReturn wert.f
 EndProcedure
@@ -865,6 +877,8 @@ Procedure Scannen()
         ;ProgressBar:
         Protected Fortschritt.i = 0
         StatusBarProgress(0, 1, Fortschritt.i, #PB_StatusBar_Raised, 0, Val(GetGadgetText(ASPs)))
+        ;Sekunden speichern für Restdauerberechnung:
+        Protected startSekunden.f = ElapsedMilliseconds()/1000
         ;Entscheidung welche Achse erst später:
         Dim ScanData.f(anzahlPunkteX.i + anzahlPunkteY.i)
         ;oberer Z ab relativ Anfang Scan-Area (Scan-Area Höhe):
@@ -919,7 +933,7 @@ Procedure Scannen()
             y.f = CurrentY.i * ValF(GetGadgetText(SAy))
             Select GetGadgetState(ScVc) ;Scan-Verfahren
               Case 0 ;Jeden Punkt abtasten mit G40
-                ScanData.f(CurrentInner.i) = ScanG40(x.f, y.f, SAHz.f)
+                ScanData.f(CurrentInner.i) = ScanG30(x.f, y.f, SAHz.f)
               Case 1 ;Oberfläche abfahren mit M119
                 ScanData.f(CurrentInner.i) = ScanM119(x.f, y.f, SAHz.f)
               Case 2 ;Kombiniert
@@ -929,6 +943,13 @@ Procedure Scannen()
             Fortschritt.i + 1
             StatusBarProgress(0, 1, Fortschritt.i, #PB_StatusBar_Raised,
                               0, Val(GetGadgetText(ASPs)))
+            StatusBarText(0, 2, "Scanne Punkt " + Str(Fortschritt.i) + "/" + GetGadgetText(ASPs))
+            ;Restdaueranzeige aktualisieren:
+            ;ASPs = Anzahl Scan-Punkte
+            Protected abgelaufeneSekunden.f = ElapsedMilliseconds()/1000 - startSekunden.f
+            Protected verbleibendeSekunden.f = (abgelaufeneSekunden.f / Fortschritt.i) * (Val(GetGadgetText(ASPs)) - Fortschritt.i)
+            ;Debug verbleibendeSekunden
+            SetGadgetText(EZs, KonvertiereZuZeit(verbleibendeSekunden.f))
           Next j.i
           ;hier Daten speichern ausserhalb der inneren Schleife:
           If Not IsFile(0)
@@ -1004,8 +1025,8 @@ CompilerIf #PB_Compiler_IsMainFile
   End
 CompilerEndIf
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 107
-; FirstLine = 56
-; Folding = --f-----z----
+; CursorPosition = 949
+; FirstLine = 854
+; Folding = ---+----n----
 ; EnableXP
 ; DPIAware

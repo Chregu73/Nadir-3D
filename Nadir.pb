@@ -38,6 +38,7 @@ Enumeration FormMenu
   #T6
   #T7
   #T8
+  #T9
 EndEnumeration
 
 XIncludeFile "Nadir.pbf" ;Einbinden der ersten Fenster-Definition
@@ -61,11 +62,8 @@ RechtsBuendig(mGx) : RechtsBuendig(mGy) : RechtsBuendig(mGz)
 RechtsBuendig(ASPs)
 RechtsBuendig(EZs)
 
-
 Global Ende
 
-
-; Die Ereignis-Prozedur, wie diese in der Eigenschaft 'Ereignis-Prozedur' jedes Gadgets definiert wurde.
 Procedure ToolBarHinzufuegen()
   Img_WindowScanner_S = LoadImage(#PB_Any,"Icons\Gartoon-Team-Gartoon-Misc-Gtk-Connect-Socket.ico")
   Img_WindowScanner_0 = LoadImage(#PB_Any,"Icons\Play.ico")
@@ -83,6 +81,7 @@ Procedure ToolBarHinzufuegen()
   Img_WindowScanner_6 = LoadImage(#PB_Any,"Icons\Iconsmind-Outline-Finger-DragFourSides.ico")
   Img_WindowScanner_7 = LoadImage(#PB_Any,"Icons\Pictogrammers-Material-Arrow-Arrow-collapse-up.ico")
   Img_WindowScanner_8 = LoadImage(#PB_Any,"Icons\Pictogrammers-Material-Dip-switch.ico")
+  Img_WindowScanner_9 = LoadImage(#PB_Any,"Icons\options+settings+tool+tools+icon-1320191159517500727_32px.ico")
   
   CreateToolBar(0, WindowID(WindowScanner), #PB_ToolBar_Large|#PB_ToolBar_Text)
   ToolBarImageButton(#Serial, ImageID(Img_WindowScanner_S), #PB_ToolBar_Toggle, "Serial")
@@ -121,14 +120,16 @@ Procedure ToolBarHinzufuegen()
   ToolBarToolTip(0, #T7, "Hilfe")
   ToolBarImageButton(#T8,ImageID(Img_WindowScanner_6), #PB_ToolBar_Normal, "Manuell")
   ToolBarToolTip(0, #T8, "Manuell Achsen fahren")
+  ToolBarImageButton(#T9,ImageID(Img_WindowScanner_9), #PB_ToolBar_Normal, "G-Code")
+  ToolBarToolTip(0, #T9, "Alle G-Codes manuell senden")
 EndProcedure
 
 ToolBarHinzufuegen()
 StartDrawing(WindowOutput(WindowScanner))
-LineXY(8, 54, 688+8, 54, $848484)
-LineXY(8, 55, 688+8, 55, $F5F5F5)
+LineXY(8, 54, 736-8, 54, $848484)
+LineXY(8, 55, 736-8, 55, $F5F5F5)
 StopDrawing()
-AddGadgetItem(ScVc, 0, "Jeden Punkt abtasten mit G40")
+AddGadgetItem(ScVc, 0, "Jeden Punkt abtasten mit G30")
 AddGadgetItem(ScVc, 1, "Oberfläche abfahren mit M119")
 AddGadgetItem(ScVc, 2, "Kombiniert")
 
@@ -189,6 +190,8 @@ Repeat
               manual(0)
             Case #T8 ;Manuell Achsen fahren
               bedienung(Event)
+            Case #T9 ;G-Codes
+              GCode(Event)
           EndSelect
         Case #PB_Event_Gadget
           EventGadget = EventGadget()
@@ -220,9 +223,9 @@ EndIf
 ConfigSpeichern()
 End
 
-; IDE Options = PureBasic 6.21 (Windows - x64)
-; CursorPosition = 188
-; FirstLine = 171
+; IDE Options = PureBasic 6.30 (Windows - x64)
+; CursorPosition = 129
+; FirstLine = 84
 ; Folding = -
 ; EnableXP
 ; DPIAware
