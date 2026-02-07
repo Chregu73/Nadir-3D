@@ -50,7 +50,9 @@ Procedure GCodeSend(EventType)
   If Not IsWindow(WindowGCodeSend)
     WindowGCodeSend = OpenWindow(0, 0, 0, 700, 700, "Nadir External UI", #PB_Window_SystemMenu | #PB_Window_ScreenCentered)
     ;Wichtig: WebView2 (Windows) oder WebKit (Mac/Linux)
-    WebViewGadget(0, 0, 0, 700, 700)
+    ;Download von https://developer.microsoft.com/en-us/microsoft-edge/webview2/
+    ;wenn WebViewGadget() abstürzt, fehlt ^
+    WebViewGadget(0, 0, 0, 700, 700, #PB_WebView_Debug)
     ;Verbindung herstellen BEVOR wir die Seite laden
     BindWebViewCallback(0, "nadirCmd", @NadirActionCallback())
     ;Die externe Datei laden. Wir nutzen 'file://' gefolgt vom Pfad
@@ -452,6 +454,7 @@ Procedure Zm01(EventType) : moveRel(0,  0,-0.1) : EndProcedure ;Z  -0.1mm
 Procedure Zm1(EventType)  : moveRel(0,  0,  -1) : EndProcedure ;Z  -1mm
 Procedure Zm10(EventType) : moveRel(0,  0, -10) : EndProcedure ;Z -10mm
 
+
 Procedure FahrenNachAktuellePosition(EventType)
   absKrd.f(#x) = ValF(GetGadgetText(APx))
   absKrd.f(#y) = ValF(GetGadgetText(APy))
@@ -657,29 +660,74 @@ Procedure.s KonvertiereZuZeit(Sekunden.i)
                   RSet(Str(RestSekunden), 2, "0")
 EndProcedure
 
+Procedure AddShortcuts()
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad4, #T1) ; X-
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad6, #T2) ; X+
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad2, #T3) ; Y-
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad8, #T4) ; Y+
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad3, #T5) ; Z-
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad9, #T6) ; Z+
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad7, #Homing) ; 7 = Home
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Add,  #SWplus) ;+ = Schrittweite erhöhen
+  AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Subtract, #SWminus) ;- = Schrittweite erniedrigen
+EndProcedure
+
+Procedure RemoveShortcuts()
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad4) ; X-
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad6) ; X+
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad2) ; Y-
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad8) ; Y+
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad3) ; Z-
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad9) ; Z+
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad7) ; 7 = Home
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Add) ;+ = Schrittweite erhöhen
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Subtract) ;- = Schrittweite erniedrigen
+EndProcedure
+
+;Definition der Funktion aus der Windows-API
+Prototype.i MessageBoxTimeout(hWnd.l, lpText.p-unicode, lpCaption.p-unicode, uType.l, wLanguageID.w, dwMilliseconds.l)
+
+Global MessageBoxTimeout.MessageBoxTimeout
+If OpenLibrary(0, "user32.dll")
+  MessageBoxTimeout = GetFunction(0, "MessageBoxTimeoutW")
+EndIf
+
+Procedure QuickInfo(Nachricht.s)
+  ; Zeigt ein Fenster für 1000ms (1 Sekunde) an
+  MessageBoxTimeout(WindowID(WindowScanner), Nachricht.s, "Nadir Info", #MB_ICONINFORMATION | #MB_SETFOREGROUND, 0, 600)
+EndProcedure
+
 Procedure StringGadgetVerifizieren(EventGadget, EventType)
   ;TextGadget hat Fokus verloren
-  If EventType = #PB_EventType_LostFocus
-    If IsNAN(ValF(GetGadgetText(EventGadget)))
-      Debug "Keine Zahl"
-    Else
-      SetGadgetText(EventGadget, StrF(ValF(GetGadgetText(EventGadget)), 2))
-    EndIf
-    ;wenn in Gadget Anfang/Ende Scan-Area
-    If EventGadget = ASAx Or ASAy Or ASAz Or ESAx Or ESAy Or ESAz Or SAx Or SAy
-      anzahlPunkte.f = (((ValF(GetGadgetText(ESAx)) - ValF(GetGadgetText(ASAx))) / ValF(GetGadgetText(SAx))) + 1)
-      anzahlPunkte.f * (((ValF(GetGadgetText(ESAy)) - ValF(GetGadgetText(ASAy))) / ValF(GetGadgetText(SAy))) + 1)
-      SetGadgetText(ASPs, StrF(anzahlPunkte.f))
-      erwarteteZeit.f = (ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))) * anzahlPunkte.f
-      ;hier ist die erwartete Zeit = der Scanhöhe als Sekunden, evtl. mit Korrekturfaktor:
-      erwarteteZeit.f * 2.5
-      SetGadgetText(EZs, KonvertiereZuZeit(erwarteteZeit.f))
-      ;Grösse Scan-Area:
-      SetGadgetText(GSAx, StrF((ValF(GetGadgetText(ESAx)) - ValF(GetGadgetText(ASAx))), 2))
-      SetGadgetText(GSAy, StrF((ValF(GetGadgetText(ESAy)) - ValF(GetGadgetText(ASAy))), 2))
-      SetGadgetText(GSAz, StrF((ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))), 2))
-    EndIf
-  EndIf
+  Select EventType
+    Case #PB_EventType_LostFocus
+      If EventGadget = APx Or EventGadget = APy Or EventGadget = APz Or EventGadget = ASAx Or
+         EventGadget = ASAy Or EventGadget = ASAz Or EventGadget = ESAx Or EventGadget = ESAy Or
+         EventGadget = ESAz Or EventGadget = GSAx Or EventGadget = GSAy Or EventGadget = GSAz Or
+         EventGadget = SAx Or EventGadget = SAy Or EventGadget = SAz Or EventGadget = OSx Or
+         EventGadget = OSy Or EventGadget = OSz Or EventGadget = mGx Or EventGadget = mGy Or
+         EventGadget = mGz
+        SetGadgetText(EventGadget, StrF(ValF(GetGadgetText(EventGadget)), 2))
+      EndIf
+      ;wenn in Gadget Anfang/Ende Scan-Area
+      If EventGadget = ASAx Or EventGadget = ASAy Or EventGadget = ASAz Or EventGadget = ESAx Or
+         EventGadget = ESAy Or EventGadget = ESAz Or EventGadget = SAx Or EventGadget = SAy
+        anzahlPunkte.f = (((ValF(GetGadgetText(ESAx)) - ValF(GetGadgetText(ASAx))) / ValF(GetGadgetText(SAx))) + 1)
+        anzahlPunkte.f * (((ValF(GetGadgetText(ESAy)) - ValF(GetGadgetText(ASAy))) / ValF(GetGadgetText(SAy))) + 1)
+        SetGadgetText(ASPs, StrF(anzahlPunkte.f))
+        erwarteteZeit.f = (ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))) * anzahlPunkte.f
+        ;hier ist die erwartete Zeit = der Scanhöhe als Sekunden, evtl. mit Korrekturfaktor:
+        erwarteteZeit.f * 2.5
+        SetGadgetText(EZs, KonvertiereZuZeit(erwarteteZeit.f))
+        ;Grösse Scan-Area:
+        SetGadgetText(GSAx, StrF((ValF(GetGadgetText(ESAx)) - ValF(GetGadgetText(ASAx))), 2))
+        SetGadgetText(GSAy, StrF((ValF(GetGadgetText(ESAy)) - ValF(GetGadgetText(ASAy))), 2))
+        SetGadgetText(GSAz, StrF((ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))), 2))
+      EndIf
+      AddShortcuts()
+    Case #PB_EventType_Focus
+      RemoveShortcuts()
+  EndSelect
 EndProcedure
 
 Procedure ASAausAktPos(EventType)
@@ -1077,8 +1125,8 @@ CompilerIf #PB_Compiler_IsMainFile
   End
 CompilerEndIf
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 70
-; FirstLine = 42
+; CursorPosition = 435
+; FirstLine = 417
 ; Folding = ---8----f+----
 ; EnableXP
 ; DPIAware

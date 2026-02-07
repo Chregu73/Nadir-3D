@@ -39,6 +39,8 @@ Enumeration FormMenu
   #T7
   #T8
   #T9
+  #SWplus
+  #SWminus
 EndEnumeration
 
 Enumeration #PB_Event_FirstCustomValue
@@ -149,18 +151,57 @@ AddGadgetItem(SpVc, 2, "Datei jedesmal öffnen und schliessen")
 ConfigLaden()
 StringGadgetVerifizieren(ASAx, #PB_EventType_LostFocus)
 
+;Tastenbelegung Nummernblock:
+;Taste	Funktion	   Erklärung
+;8 / 2	Y+ / Y-	     Oben/Unten (Bett fährt vor/zurück)
+;4 / 6	X- / X+	     Links/Rechts (Düse fährt seitlich)
+;9 / 3	Z+ / Z-	     Z-Achse hoch/runter (rechts außen)
+;7	    HOME ALL	   Alles auf Null
+;+	    1mm	- 10mm   Schrittweite erhöhen
+;-	    1mm	- 0.1mm  Schrittweite verringern
+;
+;--------+--------+--------+--------+
+; NumLck |   /    |   *    | BckSpc |
+;--------+--------+--------+--------+
+; 7 Home |  8 ^   | 9 PgUp |   -    |
+;--------+--------+--------+--------+
+; 4  <-  |   5    |  6 ->  |   +    |
+;--------+--------+--------+--------+
+; 1 End  |  2 v   | 3 PgDn |        |
+;--------+--------+--------+ Enter  +
+; 0 Ins  |   00   |  . Del |        |
+;--------+--------+--------+--------+
+AddShortcuts()
+;Die verfügbaren Schritte als Strings definieren
+Global Dim SwText.s(2)
+SwText(0) = "0.1mm"
+SwText(1) = "1.0mm"
+SwText(2) = "10mm"
+Global SchrittIndex = 0 ;Start bei 0.1mm
+
+Procedure ToolTipChange()
+  ToolBarToolTip(0, #T1, "X - " + SwText(SchrittIndex))
+  ToolBarToolTip(0, #T2, "X + " + SwText(SchrittIndex))
+  ToolBarToolTip(0, #T3, "Y - " + SwText(SchrittIndex))
+  ToolBarToolTip(0, #T4, "Y + " + SwText(SchrittIndex))
+  ToolBarToolTip(0, #T5, "Z - " + SwText(SchrittIndex))
+  ToolBarToolTip(0, #T6, "Z + " + SwText(SchrittIndex))
+EndProcedure
+
+ToolTipChange()
+
 Procedure Beenden(EventType)
   Ende = #True
 EndProcedure
 
 
-; Die übliche Haupt-Ereignisschleife, die einzige Änderung ist der automatische Aufruf der
-; für jedes Fenster generierten Ereignis-Prozedur.
+;Die übliche Haupt-Ereignisschleife, die einzige Änderung ist der automatische Aufruf der
+;für jedes Fenster generierten Ereignis-Prozedur.
 Repeat
   Event = WaitWindowEvent()
   Select EventWindow()
     Case WindowScanner
-      If Not WindowScanner_Events(Event) ; Dieser Prozedurname ist immer der Fenstername gefolgt von '_Events'
+      If Not WindowScanner_Events(Event) ;Dieser Prozedurname ist immer der Fenstername gefolgt von '_Events'
         Ende = #True
       EndIf
       Select Event
@@ -180,18 +221,26 @@ Repeat
               Auf(0)
             Case #EsA
               EndschalterAbfragen(0)
-            Case #T1 ;X - 0.1mm
-              Xm01(0)
-            Case #T2 ;X + 0.1mm
-              Xp01(0)
-            Case #T3 ;Y - 0.1mm
-              Ym01(0)
-            Case #T4 ;Y + 0.1mm
-              Yp01(0)
-            Case #T5 ;Z - 0.1mm
-              Zm01(0)
-            Case #T6 ;Z + 0.1mm
-              Zp01(0)
+            Case #T1 ;X-
+              moveRel(ValF(SwText(SchrittIndex))*-1, 0, 0)
+            Case #T2 ;X+
+              moveRel(ValF(SwText(SchrittIndex)), 0, 0)
+            Case #T3 ;Y-
+              moveRel( 0, ValF(SwText(SchrittIndex))*-1, 0)
+            Case #T4 ;Y+
+              moveRel( 0, ValF(SwText(SchrittIndex)), 0)
+            Case #T5 ;Z-
+              moveRel( 0, 0, ValF(SwText(SchrittIndex))*-1)
+            Case #T6 ;Z+
+              moveRel( 0, 0, ValF(SwText(SchrittIndex)))
+            Case #SWplus
+              If SchrittIndex < 2 : SchrittIndex + 1 : EndIf
+              QuickInfo("Schrittweite:" + #LF$ + SwText(SchrittIndex))
+              ToolTipChange()
+            Case #SWminus
+              If SchrittIndex > 0 : SchrittIndex - 1 : EndIf
+              QuickInfo("Schrittweite:" + #LF$ + SwText(SchrittIndex))
+              ToolTipChange()
             Case #T7 ;Hilfe
               manual(0)
             Case #T8 ;Manuell Achsen fahren
@@ -201,9 +250,11 @@ Repeat
           EndSelect
         Case #PB_Event_Gadget
           EventGadget = EventGadget()
+          ;Debug EventType()
           Select EventGadget
             Case APx, APy, APz, ASAx, ASAy, ASAz, ESAx, ESAy, ESAz,
-                 GSAx, GSAy, GSAz, SAx, SAy, SAz, OSx, OSy, OSz, mGx, mGy, mGz
+                 GSAx, GSAy, GSAz, SAx, SAy, SAz, OSx, OSy, OSz, mGx, mGy, mGz,
+                 mBx, mBy, mBz, DNs, Str1Txt, Str2Txt, Str3Txt
               StringGadgetVerifizieren(EventGadget, EventType())
           EndSelect
       EndSelect
@@ -232,8 +283,8 @@ ConfigSpeichern()
 End
 
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 159
-; FirstLine = 147
+; CursorPosition = 160
+; FirstLine = 134
 ; Folding = -
 ; EnableXP
 ; DPIAware

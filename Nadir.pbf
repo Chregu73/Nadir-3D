@@ -271,3 +271,9 @@ Procedure WindowScanner_Events(event)
   ProcedureReturn #True
 EndProcedure
 
+
+; IDE Options = PureBasic 6.30 (Windows - x64)
+; CursorPosition = 273
+; FirstLine = 199
+; Folding = -
+; EnableXP
