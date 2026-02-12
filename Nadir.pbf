@@ -20,6 +20,10 @@ Enumeration FormMenu
   #SerielleSchnittstelle
   #GCode
   #Firmware
+  #LNBaus
+  #LNB1
+  #LNB2
+  #Log
   #Hilfe
   #GCodes
   #Ueber
@@ -39,8 +43,12 @@ Declare Beenden(Event)
 Declare Ueber(Event)
 Declare manual(Event)
 Declare GCodeHelp(Event)
+Declare ShortCutsAus(Event)
 Declare SerialSettings(Event)
 Declare GCodeSend(Event)
+Declare ShortCutsLayout1(Event)
+Declare ShortCutsLayout2(Event)
+Declare LogfileMenu(Event)
 Declare MotorenAbschalten(EventType)
 Declare maxBeschlEinstellen(EventType)
 Declare Homing(EventType)
@@ -79,9 +87,16 @@ Procedure OpenWindowScanner(x = 0, y = 0, width = 736, height = 624)
   MenuItem(#Speichern, "Speichern", ImageID(Img_WindowScanner_4))
   MenuItem(#Beenden, "Beenden", ImageID(Img_WindowScanner_5))
   MenuTitle("Einstellungen")
-  MenuItem(#SerielleSchnittstelle, "serielle Schnittstelle", ImageID(Img_WindowScanner_2))
-  MenuItem(#GCode, "G-Code senden", ImageID(Img_WindowScanner_7))
-  MenuItem(#Firmware, "Firmware", ImageID(Img_WindowScanner_8))
+  MenuItem(#SerielleSchnittstelle, "serielle Schnittstelle...", ImageID(Img_WindowScanner_2))
+  MenuItem(#GCode, "G-Code senden...", ImageID(Img_WindowScanner_7))
+  MenuItem(#Firmware, "Firmware...", ImageID(Img_WindowScanner_8))
+  MenuBar()
+  OpenSubMenu("Layout Nummernblock")
+  MenuItem(#LNBaus, "Aus")
+  MenuItem(#LNB1, "Y = 6 + 4, Z = 9 + 3")
+  MenuItem(#LNB2, "Y = 9 + 1, Z = 8 + 2")
+  CloseSubMenu()
+  MenuItem(#Log, "Logfile schreiben")
   MenuTitle("Hilfe")
   MenuItem(#Hilfe, "Hilfe..." + Chr(9) + "F1", ImageID(Img_WindowScanner_0))
   MenuItem(#GCodes, "G-Codes", ImageID(Img_WindowScanner_6))
@@ -214,6 +229,14 @@ Procedure WindowScanner_Events(event)
         Case #GCode
           GCodeSend(EventMenu())
         Case #Firmware
+        Case #LNBaus
+          ShortCutsAus(EventMenu())
+        Case #LNB1
+          ShortCutsLayout1(EventMenu())
+        Case #LNB2
+          ShortCutsLayout2(EventMenu())
+        Case #Log
+          LogfileMenu(EventMenu())
         Case #Hilfe
           manual(EventMenu())
         Case #GCodes
@@ -271,9 +294,3 @@ Procedure WindowScanner_Events(event)
   ProcedureReturn #True
 EndProcedure
 
-
-; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 273
-; FirstLine = 199
-; Folding = -
-; EnableXP

@@ -14,6 +14,15 @@ relKrd.f(#x) = 0
 relKrd.f(#y) = 0
 relKrd.f(#z) = 0
 
+#ShortCutsAus = 0
+#ShortCutsLayout1 = 1
+#ShortCutsLayout2 = 2
+Global ShortCuts = #ShortCutsAus
+
+#Aus = 0
+#Ein = 1
+Global Logfile = #Aus
+
 Enumeration FormMenu
   ;#Laden
   ;#Speichern
@@ -43,16 +52,12 @@ Enumeration FormMenu
   #SWminus
 EndEnumeration
 
-Enumeration #PB_Event_FirstCustomValue
-  #Event_Nadir_GCode  ;Erhält automatisch den ersten freien Wert (meist 6000+)
-  #Event_Nadir_Status ;Falls du später noch mehr eigene Events brauchst
-EndEnumeration
-Global NewList GCodeQueue.s() ;Eine Liste als Puffer
 
 XIncludeFile "Nadir.pbf" ;Einbinden der ersten Fenster-Definition
 XIncludeFile "Bedienung.pbf"
 XIncludeFile "SerialSettings.pbf"
-XIncludeFile "Prozeduren.pbi"
+XIncludeFile "ProzedurenGUI.pbi"
+XIncludeFile "ProzedurenCNC.pbi"
 
 OpenWindowScanner() ; Öffnet das erste Fenster. Dieser Prozedurname ist immer 'Open' gefolgt vom Fensternamen.
 
@@ -148,17 +153,23 @@ AddGadgetItem(SpVc, 0, "Datei geöffnet lassen")
 AddGadgetItem(SpVc, 1, "Datei geöffnet lassen mit Flush")
 AddGadgetItem(SpVc, 2, "Datei jedesmal öffnen und schliessen")
 
+
 ConfigLaden()
 StringGadgetVerifizieren(ASAx, #PB_EventType_LostFocus)
 
-;Tastenbelegung Nummernblock:
+;Tastenbelegung Nummernblock Layout 1:
 ;Taste	Funktion	   Erklärung
-;8 / 2	Y+ / Y-	     Oben/Unten (Bett fährt vor/zurück)
 ;4 / 6	X- / X+	     Links/Rechts (Düse fährt seitlich)
+;8 / 2	Y+ / Y-	     Oben/Unten (Bett fährt vor/zurück)
 ;9 / 3	Z+ / Z-	     Z-Achse hoch/runter (rechts außen)
 ;7	    HOME ALL	   Alles auf Null
 ;+	    1mm	- 10mm   Schrittweite erhöhen
 ;-	    1mm	- 0.1mm  Schrittweite verringern
+;
+;Tastenbelegung Nummernblock Layout 2:
+;4 / 6	X- / X+	     Links/Rechts (Düse fährt seitlich)
+;9 / 1	Y+ / Y-	     Oben/Unten (Bett fährt vor/zurück)
+;8 / 2	Z+ / Z-	     Z-Achse hoch/runter
 ;
 ;--------+--------+--------+--------+
 ; NumLck |   /    |   *    | BckSpc |
@@ -171,7 +182,21 @@ StringGadgetVerifizieren(ASAx, #PB_EventType_LostFocus)
 ;--------+--------+--------+ Enter  +
 ; 0 Ins  |   00   |  . Del |        |
 ;--------+--------+--------+--------+
-AddShortcuts()
+Select ShortCuts
+  Case 0
+    ShortCutsAus(0)
+  Case 1
+    ShortCutsLayout1(0)
+  Case 2
+    ShortCutsLayout2(0)
+EndSelect
+
+Select Logfile
+  Case 1
+    SetMenuItemState(0, #Log, 1)
+EndSelect
+    
+
 ;Die verfügbaren Schritte als Strings definieren
 Global Dim SwText.s(2)
 SwText(0) = "0.1mm"
@@ -194,6 +219,11 @@ Procedure Beenden(EventType)
   Ende = #True
 EndProcedure
 
+Macro EditableGadgets
+  APx, APy, APz, ASAx, ASAy, ASAz, ESAx, ESAy, ESAz,
+  GSAx, GSAy, GSAz, SAx, SAy, SAz, OSx, OSy, OSz, mGx, mGy, mGz,
+  mBx, mBy, mBz, DNs, Str1Txt, Str2Txt, Str3Txt
+EndMacro
 
 ;Die übliche Haupt-Ereignisschleife, die einzige Änderung ist der automatische Aufruf der
 ;für jedes Fenster generierten Ereignis-Prozedur.
@@ -252,9 +282,7 @@ Repeat
           EventGadget = EventGadget()
           ;Debug EventType()
           Select EventGadget
-            Case APx, APy, APz, ASAx, ASAy, ASAz, ESAx, ESAy, ESAz,
-                 GSAx, GSAy, GSAz, SAx, SAy, SAz, OSx, OSy, OSz, mGx, mGy, mGz,
-                 mBx, mBy, mBz, DNs, Str1Txt, Str2Txt, Str3Txt
+            Case EditableGadgets
               StringGadgetVerifizieren(EventGadget, EventType())
           EndSelect
       EndSelect
@@ -280,11 +308,12 @@ If GetToolBarButtonState(0, #Serial)
 EndIf
 
 ConfigSpeichern()
+CloseLibrary(#PB_All)
 End
 
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 160
-; FirstLine = 134
+; CursorPosition = 197
+; FirstLine = 179
 ; Folding = -
 ; EnableXP
 ; DPIAware
