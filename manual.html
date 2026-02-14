@@ -1,146 +1,501 @@
 <!DOCTYPE html>
-<html lang="de">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Gesamtdokumentation - Nadir 3D Scanner</title>
-    <style>
-        :root { --main-blue: #1a5276; --action-orange: #e67e22; --bg-gray: #f4f7f6; --text: #2c3e50; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: var(--text); max-width: 1200px; margin: 0 auto; padding: 40px; background: var(--bg-gray); }
-        header { background: var(--main-blue); color: white; padding: 50px; border-radius: 10px; text-align: center; margin-bottom: 40px; border-bottom: 8px solid var(--action-orange); }
-        h2 { color: var(--main-blue); border-bottom: 3px solid var(--main-blue); padding-bottom: 10px; margin-top: 40px; text-transform: uppercase; }
-        h3 { color: #2980b9; border-left: 5px solid var(--action-orange); padding-left: 15px; margin-top: 30px; }
-        .button-ui { 
-            display: inline-block; background: linear-gradient(to bottom, #fff 0%, #e0e0e0 100%);
-            border: 1px solid #888; border-radius: 4px; padding: 5px 15px; 
-            font-size: 0.9em; font-weight: bold; color: #000; box-shadow: 1px 1px 3px rgba(0,0,0,0.15); margin: 2px;
-        }
-        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th { background: #f2f2f2; text-align: left; padding: 15px; border-bottom: 3px solid #ccc; }
-        td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: top; }
-        .highlight { color: #c0392b; font-weight: bold; }
-        .scad-workflow { background: #e8f4fd; border: 2px solid #2980b9; padding: 30px; border-radius: 10px; }
-        .info-box { background: #eafaf1; border-left: 6px solid #27ae60; padding: 20px; margin: 20px 0; }
-        kbd { background: #333; color: #fff; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
-    </style>
+<title>manual.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
 </head>
 <body>
-
-<header>
-    <h1>NADIR 3D SCANNER - MASTER-DOKUMENTATION</h1>
-    <p>Vollständige Referenz für Hardware-Steuerung, Scan-Logik und 3D-Rekonstruktion</p>
-</header>
-
-<div class="card">
-    <h2>1. Datei- und Systemeinstellungen</h2>
-    <p>Die Steuerung erfolgt über das Hauptmenü und die serielle Konfiguration.</p>
-    <ul>
-        <li><strong>Menü Datei:</strong> <span class="button-ui">Laden</span> und <span class="button-ui">Speichern</span> von Projektdateien sowie <span class="button-ui">Beenden</span> der Software.</li>
-        <li><strong>Menü Einstellungen:</strong> Zugriff auf die <span class="button-ui">serielle Schnittstelle</span> zur Wahl von COM-Port und Baudrate.</li>
-        <li><strong>Menü Hilfe:</strong> Schneller Zugriff auf <span class="button-ui">G-Codes</span> Referenzen und Versionsinfos.</li>
-        <li><strong>Statusleiste:</strong> Zeigt den aktuellen Scan-Fortschritt in Prozent sowie Systemmeldungen.</li>
-    </ul>
-</div>
-
-<div class="card">
-    <h2>2. Achsen-Kontrolle & Positions-Management</h2>
-    <p>Verwaltung der physischen Hardware-Koordinaten für X, Y und Z.</p>
-    <table>
-        <tr>
-            <th>Bedienelement</th>
-            <th>Funktion & Technische Logik</th>
-        </tr>
-        <tr>
-            <td><strong>Aktuelle Position</strong></td>
-            <td>Echtzeitanzeige der Koordinaten. Werte können manuell überschrieben werden, um Ziele für <span class="button-ui">Hierher fahren</span> zu definieren.</td>
-        </tr>
-        <tr>
-            <td><span class="button-ui">Homing</span></td>
-            <td>Referenzfahrt aller Achsen. Setzt das interne Koordinatensystem auf Null. <span class="highlight">Zwingend vor Scan-Start!</span></td>
-        </tr>
-        <tr>
-            <td><span class="button-ui">Scan</span> (Einzelpunkt)</td>
-            <td>Führt an der aktuellen Position eine Einzelmessung durch und gibt den Z-Wert im Terminal aus.</td>
-        </tr>
-        <tr>
-            <td><span class="button-ui">Z bis Ende Scan-Area fahren</span></td>
-            <td>Hebt die Z-Achse auf die unter "Ende Scan-Area" definierte Sicherheitshöhe. Schützt vor Kollisionen beim Positionieren.</td>
-        </tr>
-    </table>
-</div>
-
-<div class="card">
-    <h2>3. Definition der Scan-Area (Raster-Setup)</h2>
-    <p>Festlegung des räumlichen Bereichs und der Auflösung für die X- und Y-Achse.</p>
-    <h3>Eckpunkte definieren</h3>
-    <p>Nutzen Sie die Buttons <span class="button-ui">Aus aktueller Position übernehmen</span> bei <strong>Anfang Scan-Area</strong> und <strong>Ende Scan-Area</strong>, um die physische Position des Scankopfes als Bereichsgrenze zu speichern. Bestätigen Sie jeden Punkt mit <span class="button-ui">Speichern</span>.</p>
-
-    <h3>Auflösung und Messung</h3>
-    <ul>
-        <li><strong>Scan-Auflösung (X/Y):</strong> Schrittweite der Motoren. Wählbar über <span class="button-ui">0.10mm</span>, <span class="button-ui">0.20mm</span>, <span class="button-ui">0.50mm</span> oder <span class="button-ui">1.00mm</span>.</li>
-        <li><strong>Z-Höhenmessung:</strong> Die Z-Achse nutzt keine Rasterauflösung. An jedem X/Y-Punkt wird der Befehl <code>M119</code> gesendet, um den präzisen Höhendatenpunkt des Sensors zu erfassen.</li>
-        <li><strong>Grösse Scan-Area:</strong> Berechnet automatisch die Distanz zwischen Start- und Endpunkt.</li>
-    </ul>
-</div>
-
-<div class="card">
-    <h2>4. Erweitertes Scan-Verfahren</h2>
-    <p>Optimierung des Zeitaufwands und der Datensicherheit.</p>
-    <div class="info-box">
-        <strong>Mäander Scan:</strong> Wenn aktiv, fährt der Scanner im Zick-Zack-Modus. Nach Abschluss einer Zeile rückt die Nebenachse ein und die Hauptachse scannt in entgegengesetzter Richtung zurück. Dies eliminiert zeitaufwendige Leerfahrten.
-    </div>
-    <ul>
-        <li><strong>Homing vor Scan:</strong> Führt unmittelbar vor dem ersten Messpunkt eine Kalibrierung durch.</li>
-        <li><strong>Achsenreihenfolge:</strong> Auswahl über das Dropdown-Menü (z.B. X-Y oder Y-X), um die Priorität der Scanlinien festzulegen.</li>
-        <li><strong>Erwartete Zeit:</strong> Dynamische Berechnung der Scandauer basierend auf Auflösung, Fläche und Motorgeschwindigkeit.</li>
-    </ul>
-</div>
-
-<div class="scad-workflow">
-    <h2>5. Live-Visualisierung in OpenSCAD</h2>
-    <p>Die Software nutzt das <code>surface()</code>-Kommando von OpenSCAD zur 3D-Darstellung. Da OpenSCAD Daten über den <code>file</code>-Parameter einliest, ist ein spezieller Workflow nötig.</p>
-    
-    <h3>Technisches Speicherverfahren (Flush-Logik)</h3>
-    <p>Um die Performance zu maximieren und Schreibfehler zu vermeiden, nutzt das Programm ein zeilenbasiertes Speicherverfahren:</p>
-    <ol>
-        <li>Messpunkte werden im Arbeitsspeicher gesammelt.</li>
-        <li>Nach Abschluss einer <strong>vollständigen Scan-Linie</strong> (im Mäander- oder Normalmodus) wird die <code>.dat</code>-Datei aktualisiert.</li>
-        <li>Der Befehl <code>Flush</code> erzwingt das physikalische Schreiben auf die Festplatte.</li>
-        <li>Parallel dazu wird der Zeitstempel der <code>.scad</code>-Datei aktualisiert ("Touch").</li>
-    </ol>
-
-    <h3>Schritte zur Aktivierung:</h3>
-    <ol>
-        <li><span class="button-ui">surface.scad erzeugen</span>: Erstellt die Brückendatei, die auf Ihre <code>.dat</code>-Datei verweist.</li>
-        <li><strong>OpenSCAD starten:</strong> Laden Sie die <code>surface.scad</code>.</li>
-        <li><strong>Echtzeit-View:</strong> Aktivieren Sie in OpenSCAD unter <code>Design</code> die Option <kbd>Automatic Reload and Preview</kbd>.</li>
-        <li><strong>Verbindung:</strong> Aktivieren Sie im Scanner <strong>OpenSCAD aktualisieren</strong>. Die 3D-Ansicht baut sich nun <span class="highlight">Linie für Linie</span> live auf.</li>
-    </ol>
-</div>
-
-<div class="card">
-    <h2>6. Motoren-Setup & Sicherheitsfunktionen</h2>
-    <p>Konfiguration der physikalischen Grenzwerte der Schrittmotoren.</p>
-    <ul>
-        <li><strong>max. Geschw. / max. Beschl.:</strong> Eingabe der mm/sec und mm/s² Werte pro Achse.</li>
-        <li><span class="button-ui">max. Geschw. einstellen</span> / <span class="button-ui">max. Beschl. einstellen</span>: Sendet die Parameter an den Controller. Nur aktiv, wenn die Checkboxen "senden" markiert sind.</li>
-        <li><span class="button-ui">Endschalter abfragen</span>: Führt eine Diagnose der Hardware-Stopps durch.</li>
-        <li><span class="button-ui">Motoren abschalten</span>: Schaltet die Endstufen stromlos. Wichtig für manuelle Justierung oder Notstopp.</li>
-    </ul>
-</div>
-
-<div class="card">
-    <h2>7. Kommunikations-Terminal</h2>
-    <p>Direkte Schnittstelle zum G-Code-Controller.</p>
-    <ul>
-        <li><strong>Gesendet / Empfangen:</strong> Überwachung des Datenverkehrs. Rückgabewerte des Z-Sensors erscheinen hier unmittelbar nach dem <code>M119</code> Befehl.</li>
-        <li><strong>Individueller String:</strong> Drei Textfelder für benutzerdefinierte Befehlsfolgen. Senden über den jeweiligen <span class="button-ui">Senden</span>-Button.</li>
-    </ul>
-</div>
-
-<footer>
-    Nadir 3D Scanner - Dokumentationsstand 2026 | Entwickelt für PureBasic & OpenSCAD Visualisierung
-</footer>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="nadir-3d">NADIR 3D</h1>
+<ul>
+<li>3D-Scanner</li>
+<li>alternative Bedienung für 3D-Drucker und andere XYZ-Maschinen</li>
+<li>Export in OpenSCAD</li>
+</ul>
+<p><img src="Ansicht_Win10.png" alt=""></p>
+<h2 id="voraussetzungen-und-m%C3%B6glichkeiten">Voraussetzungen und Möglichkeiten</h2>
+<h3 id="hardware-voraussetzungen">Hardware-Voraussetzungen</h3>
+<p>Für die Integration in den 3D-Drucker odervCNC-Maschine müssen folgende Hardware-Komponenten vorhanden sein:</p>
+<ul>
+<li><strong>Mainboard-Anschluss:</strong> Ein freier digitaler Eingang (IO-Pin). Ideal ist ein dedizierter <code>PROBE</code>-Port oder ein nicht genutzter <code>Z-Endstop</code>-Anschluss.</li>
+<li><strong>Spannungsversorgung:</strong> Stabile 5V oder 12V-24V (je nach Ausführung des Tastkopfes).</li>
+<li><strong>Logik-Level:</strong> Die Signalspannung des Tastkopfes muss mit der Logikspannung Ihres Controllers (meist 3.3V bei ESP32/ARM oder 5V bei AVR/Mega) kompatibel sein.</li>
+</ul>
+<h3 id="voraussetzung-f%C3%BCr-ger%C3%A4t-mit-g30-single-z-probe">Voraussetzung für Gerät mit G30 (Single Z-Probe)</h3>
+<p>Der Befehl <code>G30</code> führt einen einzelnen Tastvorgang an der aktuellen XY-Position aus.</p>
+<ol>
+<li><strong>Firmware-Aktivierung:</strong> In der Firmware muss die Funktion &quot;Z-Probe&quot; aktiviert sein (z.B. in Marlin <code>#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN</code>).</li>
+<li><strong>Z-Offset Definition:</strong> Der physikalische Abstand zwischen dem Schaltpunkt des Nadir 3D und der tatsächlichen Düsenspitze ist für Nadir 3D nicht relevant, ausser dass die Probe dann in diesem Mindestabstand vom Nullpunkt positioniert werden muss.</li>
+<li><strong>Tast-Geschwindigkeit:</strong> Für eine hohe Wiederholgenauigkeit müssen die <code>PROBING_FEEDRATE</code> Werte in der Firmware moderat eingestellt sein (empfohlen: 50-100 mm/min). Die Feedrate für jede Achse kann auch in Nadir 3D eingestellt werden.</li>
+</ol>
+<h3 id="voraussetzung-f%C3%BCr-ger%C3%A4t-mit-m119-status-abfrage">Voraussetzung für Gerät mit M119 (Status-Abfrage)</h3>
+<p>Der Befehl <code>M119</code> wird zur Diagnose und Validierung der Signalzustände genutzt. Ausserdem arbeitet eine Scan-Methode mit diesem Befehl.</p>
+<ul>
+<li><strong>Pin-Mapping:</strong> Der Tastkopf muss dem korrekten Software-Endstopp zugeordnet sein.</li>
+<li><strong>Logik-Invertierung:</strong> Je nachdem, ob Sie den Tastkopf als Öffner (NC) oder Schließer (NO) verdrahtet haben, muss die Logik in der Software angepasst werden (<code>Z_MIN_PROBE_ENDSTOP_INVERTING</code>).</li>
+<li><strong>Pull-up Widerstand:</strong> Um elektromagnetische Störungen (EMV) zu vermeiden, sollte der interne Pull-up-Widerstand des Mikrocontrollers für diesen Pin aktiviert sein.</li>
+</ul>
+<h3 id="software-voraussetzungen">Software-Voraussetzungen</h3>
+<ul>
+<li>Nadir 3D braucht nicht installiert zu werden. Es startet aus einem beliebigen Verzeichnis, auch aus Netzlaufwerken und unterstützt UNC-Pfade (Universal Naming Convention)</li>
+<li>Nadir 3D ist momentan für Windows x64 kompiliert. Es besteht die Möglichkeit, später auch für Windows x86, Linux (x86 - x64), OS X (x64, M1) und Raspberry (arm32, arm64) kompiliert zu werden</li>
+<li>Nadir 3D funktioniert ohne OpenSCAD, die Ausgabedatei ist aber an OpenSCAD angepasst</li>
+<li>OpenSCAD kann hier runtergeladen werden: https://openscad.org/</li>
+</ul>
+<h3 id="%C3%BCbersicht-der-m%C3%B6glichkeiten">Übersicht der Möglichkeiten</h3>
+<p>Mit Nadir 3D erweitern Sie Ihre Maschine um folgende Fähigkeiten:</p>
+<ul>
+<li>Abtasten einer 3D-Oberfläche</li>
+<li>Speichern der Punkte für den Import in OpenSCAD</li>
+<li>Live-Visualisierung in OpenSCAD</li>
+<li>Umfangreiche Übersicht aller G-Codes mit Suchfunktion</li>
+<li>Senden der G-Codes mit Parameter</li>
+</ul>
+<blockquote>
+<p><strong>Sicherheitshinweis:</strong> Keine Software arbeitet fehlerfrei. Dies gilt auch für Nadir 3D! Für Schäden übernehme ich keine Verantwortung!</p>
+</blockquote>
+<h2 id="vorbereitung--verbindung">Vorbereitung &amp; Verbindung</h2>
+<p>Bevor ein Scan gestartet werden kann, muss die Kommunikation zur Hardware hergestellt werden:</p>
+<ul>
+<li>Öffnen Sie <code>Einstellungen</code> -&gt; <code>serielle Schnittstelle...</code> und wählen Sie den korrekten COM-Port aus.</li>
+<li>Klicken Sie auf <code>Homing</code>. Die Maschine fährt alle Achsen an die Referenzschalter.</li>
+</ul>
+<blockquote>
+<p><strong>Wichtig:</strong> Ohne Homing ist keine präzise Positionierung möglich!</p>
+</blockquote>
+<p>Sie müssen der Software mitteilen, wo das Objekt liegt. Dies geschieht über zwei Eckpunkte:</p>
+<p><img src="Scan-Area.png" alt=""></p>
+<p><strong>Anfang Scan-Area</strong></p>
+<ul>
+<li>Fahren Sie den Kopf zur vorderen, linken, unteren Ecke des Objekts. Klicken Sie bei <code>Anfang Scan-Area</code> auf <code>Aus aktueller Position übernehmen</code></li>
+</ul>
+<p><strong>Ende Scan-Area</strong></p>
+<ul>
+<li>Fahren Sie zur hinteren, rechten, oberen Ecke. Klicken Sie bei <code>Anfang Scan-Area</code> auf <code>Aus aktueller Position übernehmen</code></li>
+</ul>
+<p><strong>Hierher fahren</strong></p>
+<ul>
+<li>Nutzen Sie die Buttons <code>Hierher fahren</code> neben den Koordinaten, um die gespeicherten Eckpunkte zur Kontrolle automatisch anzufahren.</li>
+</ul>
+<blockquote>
+<p><strong>Wichtig:</strong> Die Koordinaten von <code>Anfang Scan-Area</code> müssen immer kleiner sein als von <code>Ende Scan-Area</code>!</p>
+</blockquote>
+<ul>
+<li>Wählen Sie bei <code>Dateiname</code> mit <code>Öffnen</code> eine Datei aus oder geben Sie einen Namen ein um eine neue Datei zu erstellen.</li>
+</ul>
+<h2 id="scan-parameter-einstellen">Scan-Parameter einstellen</h2>
+<p>Die Detailgenauigkeit und Dauer des Scans werden hier gesteuert:</p>
+<ul>
+<li>Wählen Sie per Button die <code>Scan-Auflösung</code> (0.10mm bis 1.00mm) oder tragen Sie die Werte manuell in das Gadget ein. Die <code>Anzahl Scan-Punkte</code> und die <code>Erwartete Zeit</code> aktualisieren sich automatisch beim verlassen des Gadgets (verliert Fokus).</li>
+<li>Aktivieren Sie <code>Mäander Scan</code>, damit der Scanner im Zick-Zack fährt (spart etwas Zeit).</li>
+<li><code>Homing vor Scan</code> ist empfohlen, um sicherzustellen, dass die Maschine vor einem langen Lauf perfekt kalibriert ist.</li>
+<li><code>Achsenreihenfolge</code> bestimmt, ob die Maschine erst Zeilen oder erst Spalten abarbeitet.</li>
+<li><code>Speicher-Verfahren</code> bestimmt, ob die Datei während des ganzen Scans geöffnet bleibt, nach jeder Zeile ein Flush ausgeführt wird oder jedesmal geöffnet und geschlossen wird.</li>
+<li><code>Scan-Verfahren</code> bestimmt, wie das Objekt gescannt wird</li>
+</ul>
+<blockquote>
+<p><strong>Hinweis:</strong> Die Scan-Auflösung der Z-Achse ist lediglich beim Scan-Verfahren mit M119 relevant!</p>
+</blockquote>
+<h2 id="live-visualisierung-in-openscad">Live-Visualisierung in OpenSCAD</h2>
+<p>Um das Ergebnis während des Scans in 3D zu sehen, folgen Sie exakt diesem Ablauf:</p>
+<p><strong>Schritt 1:</strong> Klicken Sie im Scanner-Programm auf surface.scad erzeugen.<br>
+<strong>Schritt 2:</strong> Starten Sie das Programm <code>OpenSCAD</code> manuell auf Ihrem Rechner.<br>
+<strong>Schritt 3:</strong> Öffnen Sie in OpenSCAD die Datei <code>surface.scad</code> aus Ihrem Projektverzeichnis.<br>
+<strong>Schritt 4:</strong> Aktivieren Sie in OpenSCAD im Menü <code>Design</code> die Option <code>Automatic Reload and Preview</code>.<br>
+<strong>Schritt 5:</strong> Aktivieren Sie im Scanner die Checkbox <code>OpenSCAD aktualisieren</code>.</p>
+<p>Sobald der Scan läuft, sendet das Programm nach jeder Zeile ein Signal (Aenderung in der Datei). OpenSCAD bemerkt dies und baut das 3D-Modell in Echtzeit vor Ihren Augen auf.</p>
+<blockquote>
+<p><strong>Hinweis:</strong> Damit die Aktualisierung funktioniert, stellen Sie bitte das <code>Speicher-Verfahren</code> auf <code>Datei jedesmal öffnen und schliessen</code></p>
+</blockquote>
+<h2 id="scannen">Scannen</h2>
+<ul>
+<li>Um einen automatischen Scan zu starten, drücken Sie auf <code>Start</code></li>
+<li>Zum Pausieren drücken Sie auf <code>Pause</code></li>
+<li>Um den Scan vorzeitig zu Beenden, drücken Sie auf <code>Stop</code>. Dies geht auch während dem Pausieren!</li>
+</ul>
+<h2 id="experten-funktionen--sicherheit">Experten-Funktionen &amp; Sicherheit</h2>
+<p>Zusätzliche Kontrollen für die Hardware:</p>
+<ul>
+<li><code>Scan</code> führt eine einzelne Testmessung durch.</li>
+<li><code>Z bis Ende Scan-Area fahren</code> oder <code>Auf</code> hebt den Sensor sicher über das Objekt an (Z-Wert aus <code>Ende Scan-Area</code>).</li>
+<li><code>Endschalter abfragen</code> oder <code>Switch</code> prüft, ob die Maschine einen Anschlag berührt oder ein Fehler vorliegt.</li>
+<li><code>Motoren abschalten</code> schaltet den Strom der Motoren ab (z.B. zum Abkühlen oder manuellem Verschieben).</li>
+<li><code>max. Geschw. einstellen</code> bzw. <code>max. Beschl. einstellen</code> überträgt die eingetragenen Werte an die Motorsteuerung.</li>
+<li>Unter <code>Hilfe</code> / <code>G-Codes</code> erhalten Sie Informationen zu einigen wichtigen G-Codes</li>
+<li>Der Button <code>G-Code</code> öffnet eine mächtige Liste aller relevanten G-Codes. Diese können mit der Suchfunktion bequem ausgewählt werden, und - mit Parameter - gesendet werden!</li>
+<li>Der Button <code>Manuell</code> öffnet ein Fenster zum Verfahren der drei Achsen</li>
+<li>Bei <code>Einstellungen</code> / <code>Layout Nummernblock</code> kann zwischen folgenden Shortcuts gewählt werden:</li>
+</ul>
+<p><img src="Layouts_Nummernblock.png" alt=""></p>
+<ul>
+<li>Im unteren Bereich finden Sie das <strong>Terminal</strong>. Hier können Sie unter <code>Individueller String</code> eigene G-Code Befehle eingeben und mit Senden direkt an die Maschine schicken. Das Feld <strong>Empfangen</strong> zeigt die Antwort der Hardware an.</li>
+</ul>
+<h2 id="beenden">Beenden</h2>
+<p>Beim Beenden werden alle Einstellungen gespeichert, die serielle Schnittstelle und evtl. geöffnete Dateien geschlossen.</p>
+<h2 id="autoresponser">AutoResponser</h2>
+<p>Der AutoResponser simuliert einen MKS TinyBee und antwortet auf die GCodes G40 und M119 detailiert und auf alle Anderen mit &quot;ok&quot;.
+In der .bat Datei kann die serielle Schnittstelle als Argument mitgegeben werden.
+Die Verbindung zu Nadir 3D erfolgt über einen Null-Modem Emulator wie <a href="https://sourceforge.net/projects/com0com/">com0com</a>.</p>
+<p>Nadir 3D Scanner Handbuch • 2026</p>
 
 </body>
 </html>
