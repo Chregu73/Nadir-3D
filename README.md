@@ -8,7 +8,7 @@
 ## Voraussetzungen und Möglichkeiten
 
 ### Hardware-Voraussetzungen
-Für die Integration in den 3D-Drucker odervCNC-Maschine müssen folgende Hardware-Komponenten vorhanden sein:
+Für die Integration in den 3D-Drucker oder CNC-Maschine müssen folgende Hardware-Komponenten vorhanden sein:
 
 * **Mainboard-Anschluss:** Ein freier digitaler Eingang (IO-Pin). Ideal ist ein dedizierter `PROBE`-Port oder ein nicht genutzter `Z-Endstop`-Anschluss.
 * **Spannungsversorgung:** Stabile 5V oder 12V-24V (je nach Ausführung des Tastkopfes).
