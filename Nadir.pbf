@@ -23,7 +23,8 @@ Enumeration FormMenu
   #LNBaus
   #LNB1
   #LNB2
-  #Log
+  #LogFile
+  #Melodie
   #Hilfe
   #GCodes
   #Ueber
@@ -41,6 +42,7 @@ Img_WindowScanner_8 = LoadImage(#PB_Any,"Icons\settings-131964743801424017_32px.
 
 Declare Beenden(Event)
 Declare Ueber(Event)
+Declare MelodieMenu(Event)
 Declare manual(Event)
 Declare GCodeHelp(Event)
 Declare ShortCutsAus(Event)
@@ -72,7 +74,7 @@ Declare individuellerString1Senden(EventType)
 Declare ErzeugeSCAD(EventType)
 
 Procedure OpenWindowScanner(x = 0, y = 0, width = 736, height = 624)
-  WindowScanner = OpenWindow(#PB_Any, x, y, width, height, "Nadir 3D", #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered)
+  WindowScanner = OpenWindow(#PB_Any, x, y, width, height, "Nadir 3D", #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_Invisible | #PB_Window_ScreenCentered)
   AddKeyboardShortcut(WindowScanner, #PB_Shortcut_F1, #Hilfe)
 
   CreateStatusBar(0, WindowID(WindowScanner))
@@ -96,7 +98,8 @@ Procedure OpenWindowScanner(x = 0, y = 0, width = 736, height = 624)
   MenuItem(#LNB1, "Y = 6 + 4, Z = 9 + 3")
   MenuItem(#LNB2, "Y = 9 + 1, Z = 8 + 2")
   CloseSubMenu()
-  MenuItem(#Log, "Logfile schreiben")
+  MenuItem(#LogFile, "Logfile schreiben")
+  MenuItem(#Melodie, "Melodie bei Scan Ende")
   MenuTitle("Hilfe")
   MenuItem(#Hilfe, "Hilfe..." + Chr(9) + "F1", ImageID(Img_WindowScanner_0))
   MenuItem(#GCodes, "G-Codes", ImageID(Img_WindowScanner_6))
@@ -235,8 +238,10 @@ Procedure WindowScanner_Events(event)
           ShortCutsLayout1(EventMenu())
         Case #LNB2
           ShortCutsLayout2(EventMenu())
-        Case #Log
+        Case #LogFile
           LogfileMenu(EventMenu())
+        Case #Melodie
+          MelodieMenu(EventMenu())
         Case #Hilfe
           manual(EventMenu())
         Case #GCodes

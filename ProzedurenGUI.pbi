@@ -1,4 +1,32 @@
-﻿Global WindowGCodeHelp
+﻿Procedure FadeInWindow(win, time = 1000)
+  time = time / 51
+  ;Fenster auf Layered setzen
+  SetWindowLongPtr_(WindowID(win), #GWL_EXSTYLE, GetWindowLongPtr_(WindowID(win), #GWL_EXSTYLE) | #WS_EX_LAYERED)
+  ;Sofort auf 0 (unsichtbar) setzen, bevor das Bild kommt
+  SetLayeredWindowAttributes_(WindowID(win), 0, 0, #LWA_ALPHA)
+  ;Event-Queue kurz abarbeiten (wichtig, damit Windows das Image zeichnet!)
+  While WindowEvent() : Wend
+  ;Sanft einblenden
+  For alpha = 0 To 255 Step 5
+    If alpha = 0
+      HideWindow(win, #False)
+    EndIf
+    SetLayeredWindowAttributes_(WindowID(win), 0, alpha, #LWA_ALPHA)
+    UpdateWindow_(WindowID(win)) ; Erzwingt das Neuzeichnen
+    Delay(time) 
+  Next    
+  ;JETZT WICHTIG: Den Layered-Status entfernen
+  Protected Style = GetWindowLongPtr_(WindowID(win), #GWL_EXSTYLE)
+  SetWindowLongPtr_(WindowID(win), #GWL_EXSTYLE, Style & ~#WS_EX_LAYERED)
+  ;Einmaliges Neuzeichnen erzwingen, damit alles sauber aussieht
+  RedrawWindow_(WindowID(win), #Null, #Null, #RDW_INVALIDATE | #RDW_UPDATENOW | #RDW_FRAME)
+EndProcedure
+
+Procedure PlayNadirScanLong()
+  MessageBeep_(#MB_OK)
+EndProcedure
+
+Global WindowGCodeHelp
 ;Hilfe für verschiedene G-Codes anzeigen
 Procedure GCodeHelp(EventType)
   If Not IsWindow(WindowGCodeHelp)
@@ -284,36 +312,108 @@ EndProcedure
 Procedure ErzeugeSCAD(EventType)
   OriginalName$ = GetGadgetText(DNs)
   DateiName$ = ReplaceEndung(OriginalName$, "scad")
-  If CreateFile(0, DateiName$)  ;neue Textdatei erstellen
-    WriteStringN(0, "//surface.scad")
-    WriteStringN(0, "")
-    WriteStringN(0, "x_scale = "+GetGadgetText(SAx)+";")
-    WriteStringN(0, "y_scale = "+GetGadgetText(SAy)+";")
-    WriteStringN(0, "z_scale = 1;")
-    WriteStringN(0, "")
+  If CreateFile(#scad, DateiName$)  ;neue Textdatei erstellen
+    WriteStringN(#scad, "//surface.scad")
+    WriteStringN(#scad, "")
+    WriteStringN(#scad, "x_scale = "+GetGadgetText(SAx)+";")
+    WriteStringN(#scad, "y_scale = "+GetGadgetText(SAy)+";")
+    WriteStringN(#scad, "z_scale = 1;")
+    WriteStringN(#scad, "")
+    WriteStringN(#scad, "difference() {")
     Select GetGadgetState(ARFc)
       Case 0 ;Zuerst X-Achse, dann Y-Achse
-        WriteStringN(0, "rotate([0,0,0])")
-        WriteStringN(0, "mirror([0,0,0])")
+        WriteStringN(#scad, "  rotate([0,0,0])")
+        WriteStringN(#scad, "  mirror([0,0,0])")
       Case 1 ;Zuerst Y-Achse, dann X-Achse
-        WriteStringN(0, "rotate([0,0,-90])")
-        WriteStringN(0, "mirror([1,0,0])")
+        WriteStringN(#scad, "  rotate([0,0,-90])")
+        WriteStringN(#scad, "  mirror([1,0,0])")
     EndSelect
-    WriteStringN(0, "scale([x_scale, y_scale, z_scale])")
-    WriteStringN(0, "surface(file = "+#DOUBLEQUOTE$+"surface.dat"+
+    WriteStringN(#scad, "  scale([x_scale, y_scale, z_scale])")
+    WriteStringN(#scad, "  surface(file = "+#DOUBLEQUOTE$+"surface.dat"+
                     #DOUBLEQUOTE$+", center = false);")
-    WriteStringN(0, "")
-    CloseFile(0)
+    WriteStringN(#scad, "  translate([0,0,-50])")
+    WriteStringN(#scad, "  cube([500, 500, 100], center=true);")
+    WriteStringN(#scad, "}")
+    WriteStringN(#scad, "")
+    CloseFile(#scad)
   Else
     StatusBarText(0, 2, "Konnte Datei nicht erstellen!")
   EndIf
 EndProcedure
 
+Procedure UpdateSCADTimestamp(DateiName$)
+  Protected File, Content$, Pos, NewLine$ = "//Last Update: " + FormatDate("%hh:%ii:%ss", Date())
+  ;Wir öffnen die Datei im normalen Schreib/Lese-Modus (nicht Append!)
+  If OpenFile(#scad, DateiName$)
+    ;1. Die gesamte Datei in einen String einlesen
+    ;Wir nutzen Lof(File), um genau zu wissen, wie viel wir lesen müssen.
+    FileSeek(#scad, 0)
+    Content$ = ReadString(#scad, #PB_File_IgnoreEOL, Lof(#scad))
+    ;2. Suchen, ob unser Kommentar schon existiert
+    Pos = FindString(Content$, "//Last Update:")
+    If Pos > 0
+      ;Falls gefunden: Den Pointer genau an den Anfang des alten Kommentars setzen
+      ;(PB Strings sind 1-basiert, Dateipointer 0-basiert, daher Pos-1)
+      FileSeek(#scad, Pos - 1)
+    Else
+      ;Falls nicht gefunden: Ans Ende der Datei springen
+      FileSeek(#scad, Lof(#scad))
+      WriteStringN(#scad, "") ; Eine Leerzeile zur Sicherheit
+    EndIf
+    ;3. Den neuen Zeitstempel schreiben
+    ;Das überschreibt ab dieser Position alles Folgende oder hängt es neu an
+    WriteStringN(#scad, NewLine$)
+    ;4. WICHTIG: Falls der neue String kürzer wäre als der alte, 
+    ;müssten wir den Rest der Datei abschneiden (Truncate).
+    ;Da unser Zeitstempel aber immer gleich lang ist, reicht CloseFile.
+    TruncateFile(#scad) 
+    CloseFile(#scad)
+  EndIf
+EndProcedure
+
 Procedure EditorAutoScroll(Gadget)
-  ; 1. Den "Cursor" (Selection) ganz ans Ende setzen (-1)
+  ;1. Den "Cursor" (Selection) ganz ans Ende setzen (-1)
   SendMessage_(GadgetID(Gadget), #EM_SETSEL, -1, -1)
-  ; 2. Die Ansicht zum Cursor scrollen
+  ;2. Die Ansicht zum Cursor scrollen
   SendMessage_(GadgetID(Gadget), #EM_SCROLLCARET, 0, 0)
+EndProcedure
+
+Procedure.s TimeDateMS()
+  Protected st.SYSTEMTIME
+  ;Windows API aufrufen, um die Systemzeit inkl. MS zu holen
+  GetLocalTime_(@st)
+  ;Manuelles Zusammenbauen des Formats: [hh:ii:ss.ms dd.mm.yyyy]
+  ProcedureReturn "[" + 
+                  RSet(Str(st\wDay), 2, "0") + "." + 
+                  RSet(Str(st\wMonth), 2, "0") + "." + 
+                  Str(st\wYear) + " " + 
+                  RSet(Str(st\wHour), 2, "0") + ":" + 
+                  RSet(Str(st\wMinute), 2, "0") + ":" + 
+                  RSet(Str(st\wSecond), 2, "0") + "." + 
+                  RSet(Str(st\wMilliseconds), 3, "0") + "]"
+EndProcedure
+
+Enumeration LogTyp
+  #info ;🛈
+  #up   ;⯅
+  #down ;⯆
+EndEnumeration
+  
+Procedure Loggen(typ, text.s)
+  If GetMenuItemState(0, #LogFile)
+    text.s = TimeDateMS() + ": " + text.s
+    Select typ
+      Case #info
+        text.s = "🛈 " + text.s
+      Case #up
+        text.s = "⯅ " + text.s
+      Case #down
+        text.s = "⯆ " + text.s
+    EndSelect
+    If IsFile(#log)
+      WriteStringN(#log, text.s)
+    EndIf
+  EndIf
 EndProcedure
 
 Macro Unicode(Mem, Type = #PB_Ascii)
@@ -363,6 +463,7 @@ Procedure.s SendRec2(text.s, timeoutMS.i = 20000)
   If IsSerialPort(SerialPortHandle.i)
     If WriteSerialPortString(SerialPortHandle.i, text.s + NZ$, #PB_UTF8)
       SetGadgetText(GESs, text.s)
+      Loggen(#up, text.s)
       ; Die Schleife läuft, bis das Timeout erreicht ist
       While (ElapsedMilliseconds() - StartZeit) < timeoutMS
         
@@ -375,7 +476,11 @@ Procedure.s SendRec2(text.s, timeoutMS.i = 20000)
             ; UI Updates innerhalb der Datenverarbeitung
             SetGadgetText(EMPFs, Ergebnis)
             EditorAutoScroll(EMPFs)
-            
+            ;Loggen, letztes LF weg:
+            text.s = RemoveString(Ergebnis, #LF$, #PB_String_CaseSensitive, Len(Ergebnis))
+            ;Zwischen-LFs durch CRLF plus 30 Spaces ersetzen:
+            text.s = ReplaceString(text.s, #LF$, #CRLF$ + Space(30))
+            Loggen(#down, text.s)
             ; Falls "ok" empfangen wurde, können wir sofort aufhören
             If FindString(Ergebnis, "ok" + NZ$)
               FreeMemory(*Puffer)
@@ -503,12 +608,12 @@ EndProcedure
 
 Procedure.s KonvertiereZuZeit(Sekunden.i)
   Protected Stunden.i, Minuten.i, RestSekunden.i
-  ; Berechnung der Einheiten
+  ;Berechnung der Einheiten
   Stunden = Sekunden / 3600
   Minuten = (Sekunden % 3600) / 60
   RestSekunden = Sekunden % 60
-  ; Rückgabe als formatierter String (HH:MM:SS)
-  ; RSet fügt bei Bedarf führende Nullen hinzu
+  ;Rückgabe als formatierter String (HH:MM:SS)
+  ;RSet fügt bei Bedarf führende Nullen hinzu
   ProcedureReturn RSet(Str(Stunden), 2, "0") + ":" + 
                   RSet(Str(Minuten), 2, "0") + ":" + 
                   RSet(Str(RestSekunden), 2, "0")
@@ -516,6 +621,8 @@ EndProcedure
 
 
 Procedure RemoveShortcuts()
+  ;Alternativ:
+  ;RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_All)
   RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad4) ; X-
   RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad6) ; X+
   RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad2) ; Y-
@@ -526,6 +633,8 @@ Procedure RemoveShortcuts()
   RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad7) ; 7 = Home
   RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Add) ;+ = Schrittweite erhöhen
   RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Subtract) ;- = Schrittweite erniedrigen
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Divide) ; "/" = Anfang Scan-Area setzen
+  RemoveKeyboardShortcut(WindowScanner, #PB_Shortcut_Multiply) ; "*" = Ende Scan-Area setzen
 EndProcedure
 
 Procedure AddShortcuts(Layout)
@@ -539,8 +648,10 @@ Procedure AddShortcuts(Layout)
       AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad3, #T5) ; Z-
       AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad9, #T6) ; Z+
       AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad7, #Homing) ; 7 = Home
-      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Add,  #SWplus) ;+ = Schrittweite erhöhen
-      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Subtract, #SWminus) ;- = Schrittweite erniedrigen
+      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Add,  #SWplus) ; + = Schrittweite erhöhen
+      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Subtract, #SWminus) ; - = Schrittweite erniedrigen
+      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Divide, #SC_ASA_set) ; "/" = Anfang Scan-Area setzen
+      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Multiply, #SC_ESA_set) ; "*" = Ende Scan-Area setzen
     Case 2
       AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad4, #T1) ; X-
       AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad6, #T2) ; X+
@@ -549,8 +660,10 @@ Procedure AddShortcuts(Layout)
       AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad2, #T5) ; Z-
       AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad8, #T6) ; Z+
       AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Pad7, #Homing) ; 7 = Home
-      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Add,  #SWplus) ;+ = Schrittweite erhöhen
-      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Subtract, #SWminus) ;- = Schrittweite erniedrigen
+      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Add,  #SWplus) ; + = Schrittweite erhöhen
+      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Subtract, #SWminus) ; - = Schrittweite erniedrigen
+      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Divide, #SC_ASA_set) ; "/" = Anfang Scan-Area setzen
+      AddKeyboardShortcut(WindowScanner, #PB_Shortcut_Multiply, #SC_ESA_set) ; "*" = Ende Scan-Area setzen
   EndSelect
 EndProcedure
 
@@ -579,25 +692,36 @@ Procedure ShortCutsLayout2(EventType)
 EndProcedure
 
 Procedure LogfileMenu(EventType)
-  If GetMenuItemState(0, #Log)
-    SetMenuItemState(0, #Log, 0)
+  If GetMenuItemState(0, #LogFile)
+    SetMenuItemState(0, #LogFile, 0)
     Logfile = 0
   Else
-    SetMenuItemState(0, #Log, 1)
+    SetMenuItemState(0, #LogFile, 1)
     Logfile = 1
   EndIf
 EndProcedure
 
 
 Procedure Logfile(EventType)
-  If GetMenuItemState(0, #Log) = 1
+  If GetMenuItemState(0, #LogFile) = 1
     Logfile = #Aus
-    SetMenuItemState(0, #Log, 0)
+    SetMenuItemState(0, #LogFile, 0)
   Else
     Logfile = #Ein
-    SetMenuItemState(0, #Log, 1)
+    SetMenuItemState(0, #LogFile, 1)
   EndIf
 EndProcedure
+
+Procedure MelodieMenu(EventType)
+  If GetMenuItemState(0, #Melodie)
+    SetMenuItemState(0, #Melodie, 0)
+    Melodie = #Aus
+  Else
+    SetMenuItemState(0, #Melodie, 1)
+    Melodie = #Ein
+  EndIf
+EndProcedure
+
 
 ;Definition der Funktion aus der Windows-API
 Prototype.i MessageBoxTimeout(hWnd.l, lpText.p-unicode, lpCaption.p-unicode, uType.l, wLanguageID.w, dwMilliseconds.l)
@@ -608,13 +732,13 @@ If OpenLibrary(0, "user32.dll")
 EndIf
 
 Procedure QuickInfo(Nachricht.s)
-  ; Zeigt ein Fenster für 1000ms (1 Sekunde) an
+  ;Zeigt ein Fenster für 600ms an
   MessageBoxTimeout(WindowID(WindowScanner), Nachricht.s, "Nadir Info", #MB_ICONINFORMATION | #MB_SETFOREGROUND, 0, 600)
 EndProcedure
 
 Procedure StringGadgetVerifizieren(EventGadget, EventType)
-  ;TextGadget hat Fokus verloren
   Select EventType
+    ;TextGadget hat Fokus verloren
     Case #PB_EventType_LostFocus
       If EventGadget = APx Or EventGadget = APy Or EventGadget = APz Or EventGadget = ASAx Or
          EventGadget = ASAy Or EventGadget = ASAz Or EventGadget = ESAx Or EventGadget = ESAy Or
@@ -632,7 +756,7 @@ Procedure StringGadgetVerifizieren(EventGadget, EventType)
         SetGadgetText(ASPs, StrF(anzahlPunkte.f))
         erwarteteZeit.f = (ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))) * anzahlPunkte.f
         ;hier ist die erwartete Zeit = der Scanhöhe als Sekunden, evtl. mit Korrekturfaktor:
-        erwarteteZeit.f * 2.5
+        erwarteteZeit.f * 1.5
         SetGadgetText(EZs, KonvertiereZuZeit(erwarteteZeit.f))
         ;Grösse Scan-Area:
         SetGadgetText(GSAx, StrF((ValF(GetGadgetText(ESAx)) - ValF(GetGadgetText(ASAx))), 2))
@@ -640,7 +764,10 @@ Procedure StringGadgetVerifizieren(EventGadget, EventType)
         SetGadgetText(GSAz, StrF((ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))), 2))
       EndIf
       AddShortcuts(ShortCuts)
+      Debug "AddShortCuts()"
+    ;Fokus erhalten
     Case #PB_EventType_Focus
+      Debug "RemoveShortCuts()"
       RemoveShortcuts()
   EndSelect
 EndProcedure
@@ -668,6 +795,8 @@ EndProcedure
 
 Procedure ConfigLaden()
   OpenPreferences("Nadir.ini")
+  ResizeWindow(WindowScanner, ReadPreferenceInteger("Fensterposition X", 100),
+               ReadPreferenceInteger("Fensterposition Y", 100), #PB_Ignore, #PB_Ignore)
   SetGadgetText(ASAx, ReadPreferenceString("Anfang Scan-Area X", "30.00"))
   SetGadgetText(ASAy, ReadPreferenceString("Anfang Scan-Area Y", "30.00"))
   SetGadgetText(ASAz, ReadPreferenceString("Anfang Scan-Area Z", "0.00"))
@@ -696,13 +825,16 @@ Procedure ConfigLaden()
   SetGadgetText(Str1Txt, ReadPreferenceString("Individueller String 1", ""))
   SetGadgetText(Str2Txt, ReadPreferenceString("Individueller String 2", ""))
   SetGadgetText(Str3Txt, ReadPreferenceString("Individueller String 3", ""))
-  ShortCuts = ReadPreferenceInteger("Layout Nummernblock", 0)
-  Logfile = ReadPreferenceInteger("Logfile schreiben", 0)
+  ShortCuts = ReadPreferenceInteger("Layout Nummernblock", #ShortCutsAus)
+  Logfile = ReadPreferenceInteger("Logfile schreiben", #Aus)
+  Melodie = ReadPreferenceInteger("Melodie bei Scan Ende", #Aus)
   ClosePreferences()
 EndProcedure  
 
 Procedure ConfigSpeichern()
   OpenPreferences("Nadir.ini")
+  WritePreferenceInteger("Fensterposition X", WindowX(WindowScanner))
+  WritePreferenceInteger("Fensterposition Y", WindowY(WindowScanner))
   WritePreferenceString("Anfang Scan-Area X", GetGadgetText(ASAx))
   WritePreferenceString("Anfang Scan-Area Y", GetGadgetText(ASAy))
   WritePreferenceString("Anfang Scan-Area Z", GetGadgetText(ASAz))
@@ -733,6 +865,7 @@ Procedure ConfigSpeichern()
   WritePreferenceString("Individueller String 3", GetGadgetText(Str3Txt))
   WritePreferenceInteger("Layout Nummernblock", ShortCuts)
   WritePreferenceInteger("Logfile schreiben", Logfile)
+  WritePreferenceInteger("Melodie bei Scan Ende", Melodie)
   ClosePreferences()
 EndProcedure  
 
@@ -762,8 +895,8 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 586
-; FirstLine = 512
-; Folding = ----6---
+; CursorPosition = 758
+; FirstLine = 678
+; Folding = -----9---
 ; EnableXP
 ; DPIAware

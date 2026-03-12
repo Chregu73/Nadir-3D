@@ -23,6 +23,9 @@ Global ShortCuts = #ShortCutsAus
 #Ein = 1
 Global Logfile = #Aus
 
+;Melodie beim Scan Ende:
+Global Melodie = #Aus
+
 Enumeration FormMenu
   ;#Laden
   ;#Speichern
@@ -50,8 +53,15 @@ Enumeration FormMenu
   #T9
   #SWplus
   #SWminus
+  #SC_ASA_set
+  #SC_ESA_set
 EndEnumeration
 
+Enumeration Dateinummer
+  #dat
+  #scad
+  #log
+EndEnumeration
 
 XIncludeFile "Nadir.pbf" ;Einbinden der ersten Fenster-Definition
 XIncludeFile "Bedienung.pbf"
@@ -59,7 +69,11 @@ XIncludeFile "SerialSettings.pbf"
 XIncludeFile "ProzedurenGUI.pbi"
 XIncludeFile "ProzedurenCNC.pbi"
 
-OpenWindowScanner() ; Öffnet das erste Fenster. Dieser Prozedurname ist immer 'Open' gefolgt vom Fensternamen.
+;Öffnet das Hauptfenster.
+;Dieser Prozedurname ist immer 'Open' gefolgt vom Fensternamen.
+;Zuerst unsichtbar. Wird weiter unter eingefadet:
+OpenWindowScanner()
+;FadeInWindow(WindowScanner, 1000)
 
 Macro RechtsBuendig(Gadget) ;Rechtsbündig machen
   SetWindowLong_(GadgetID(Gadget), #GWL_STYLE, GetWindowLong_(GadgetID(Gadget), #GWL_STYLE)&~#ES_LEFT|#ES_RIGHT) ;Rechtsbündig machen
@@ -165,6 +179,8 @@ StringGadgetVerifizieren(ASAx, #PB_EventType_LostFocus)
 ;7	    HOME ALL	   Alles auf Null
 ;+	    1mm	- 10mm   Schrittweite erhöhen
 ;-	    1mm	- 0.1mm  Schrittweite verringern
+;/                   Anfang Scan-Area setzen
+;*                   Ende Scan-Area setzen
 ;
 ;Tastenbelegung Nummernblock Layout 2:
 ;4 / 6	X- / X+	     Links/Rechts (Düse fährt seitlich)
@@ -193,9 +209,14 @@ EndSelect
 
 Select Logfile
   Case 1
-    SetMenuItemState(0, #Log, 1)
+    SetMenuItemState(0, #LogFile, 1)
 EndSelect
     
+Select Melodie
+  Case #Ein
+    SetMenuItemState(0, #Melodie, 1)
+EndSelect
+
 
 ;Die verfügbaren Schritte als Strings definieren
 Global Dim SwText.s(2)
@@ -224,6 +245,9 @@ Macro EditableGadgets
   GSAx, GSAy, GSAz, SAx, SAy, SAz, OSx, OSy, OSz, mGx, mGy, mGz,
   mBx, mBy, mBz, DNs, Str1Txt, Str2Txt, Str3Txt
 EndMacro
+
+;Fenster langsam einblenden:
+FadeInWindow(WindowScanner, 1000)
 
 ;Die übliche Haupt-Ereignisschleife, die einzige Änderung ist der automatische Aufruf der
 ;für jedes Fenster generierten Ereignis-Prozedur.
@@ -271,6 +295,10 @@ Repeat
               If SchrittIndex > 0 : SchrittIndex - 1 : EndIf
               QuickInfo("Schrittweite:" + #LF$ + SwText(SchrittIndex))
               ToolTipChange()
+            Case #SC_ASA_set
+              ASAausAktPos(0)
+            Case #SC_ESA_set
+              ESAausAktPos(0)
             Case #T7 ;Hilfe
               manual(0)
             Case #T8 ;Manuell Achsen fahren
@@ -283,6 +311,7 @@ Repeat
           ;Debug EventType()
           Select EventGadget
             Case EditableGadgets
+              Debug EventGadget
               StringGadgetVerifizieren(EventGadget, EventType())
           EndSelect
       EndSelect
@@ -309,11 +338,17 @@ EndIf
 
 ConfigSpeichern()
 CloseLibrary(#PB_All)
+AnimateWindow_(WindowID(WindowScanner),2000,#AW_BLEND|#AW_HIDE)
+;AnimateWindow_(WindowID(WindowScanner),500,#AW_CENTER|#AW_HIDE)
+;AnimateWindow_(WindowID(WindowScanner),500,#AW_HOR_NEGATIVE|#AW_HIDE)
+;AnimateWindow_(WindowID(WindowScanner),500,#AW_HOR_POSITIVE|#AW_HIDE)
+;AnimateWindow_(WindowID(WindowScanner),500,#AW_VER_NEGATIVE|#AW_HIDE)
+;AnimateWindow_(WindowID(WindowScanner),500,#AW_VER_POSITIVE|#AW_HIDE)
 End
 
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 197
-; FirstLine = 179
+; CursorPosition = 182
+; FirstLine = 161
 ; Folding = -
 ; EnableXP
 ; DPIAware

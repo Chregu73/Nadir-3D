@@ -490,9 +490,20 @@ code {
 <li>Im unteren Bereich finden Sie das <strong>Terminal</strong>. Hier können Sie unter <code>Individueller String</code> eigene G-Code Befehle eingeben und mit Senden direkt an die Maschine schicken. Das Feld <strong>Empfangen</strong> zeigt die Antwort der Hardware an.</li>
 </ul>
 <h2 id="beenden">Beenden</h2>
-<p>Beim Beenden werden alle Einstellungen gespeichert, die serielle Schnittstelle und evtl. geöffnete Dateien geschlossen.</p>
+<p>Beim Beenden werden alle Einstellungen und die Position des Hauptfensters gespeichert, die serielle Schnittstelle und evtl. geöffnete Dateien geschlossen.</p>
+<blockquote>
+<p><strong>Tipp:</strong> Wenn ein Fenster aus irgendeinem Grund ausserhalb des sichtbaren Bereichs liegt, holen Sie es folgendermassen zurück:</p>
+<ul>
+<li>Wähle das Fenster in der Taskleiste mit der Maus aus (damit es den Fokus hat).</li>
+<li>Drücke <code>Alt + Leertaste</code>. (Es öffnet sich das Systemmenü, auch wenn du es nicht siehst).</li>
+<li>Drücke die Taste <code>V</code> (für &quot;Verschieben&quot;). Der <code>Mauszeiger</code> wird nun zu einem <code>Vierfach-Pfeil</code>.</li>
+<li>Drücke eine beliebige <code>Pfeiltaste</code> (Links, Rechts, Oben oder Unten) nur einmal kurz.</li>
+<li>Bewege die Maus (ohne zu klicken!). Das Fenster &quot;klebt&quot; jetzt an deinem <code>Mauszeiger</code> und springt sofort in den sichtbaren Bereich deines aktuellen Monitors.</li>
+<li>Klicke einmal mit der <code>linken Maustaste</code>, um das Fenster an der neuen Position abzusetzen.</li>
+</ul>
+</blockquote>
 <h2 id="autoresponser">AutoResponser</h2>
-<p>Der AutoResponser simuliert einen MKS TinyBee und antwortet auf die GCodes G40 und M119 detailiert und auf alle Anderen mit &quot;ok&quot;.
+<p>Der AutoResponser simuliert einen MKS TinyBee und antwortet auf die GCodes G30 und M119 detailiert und auf alle Anderen mit &quot;ok&quot;.
 In der .bat Datei kann die serielle Schnittstelle als Argument mitgegeben werden.
 Die Verbindung zu Nadir 3D erfolgt über einen Null-Modem Emulator wie <a href="https://sourceforge.net/projects/com0com/">com0com</a>.</p>
 <p>Nadir 3D Scanner Handbuch • 2026</p>

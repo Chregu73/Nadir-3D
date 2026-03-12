@@ -238,39 +238,74 @@ EndProcedure
 ;Die Zahlen müssen durch Leerzeichen oder Tabulatoren getrennt werden.
 ;Leerzeilen sowie Zeilen, die mit einem #-Zeichen beginnen, werden ignoriert.
 
+Macro GGT(Gadget)
+  GetGadgetText(Gadget)
+EndMacro
+
+Procedure.s GGS(Gadget)
+  If GetGadgetState(Gadget) = #PB_Checkbox_Checked
+    ;ProcedureReturn "Ja"
+    ProcedureReturn Chr($E2) + Chr($98) + Chr($91) ;Checkbox checked
+  Else
+    ;ProcedureReturn "Nein"
+    ProcedureReturn Chr($E2) + Chr($98) + Chr($90) ;Checkbox unchecked
+  EndIf
+EndProcedure
+
 Procedure Scannen()
   If GetToolBarButtonState(0, #Start)
     If serialPortOpen.i
-      If CreateFile(0, GetGadgetText(DNs)) ;neue Textdatei erstellen
-        WriteStringN(0, "#surface.dat")
-        WriteStringN(0, "#Aufloesung X-Achse: "+GetGadgetText(SAx)+"mm")
-        WriteStringN(0, "#Aufloesung Y-Achse: "+GetGadgetText(SAy)+"mm")
+      If CreateFile(#dat, GetGadgetText(DNs)) ;neue Textdatei erstellen
+        WriteStringN(#dat, "#surface.dat")
+        WriteStringN(#dat, "#Aufloesung X-Achse: "+GetGadgetText(SAx)+"mm")
+        WriteStringN(#dat, "#Aufloesung Y-Achse: "+GetGadgetText(SAy)+"mm")
+        ;Logfile vorbereiten:
+        If GetMenuItemState(0, #LogFile)
+          CreateFile(#log, FormatDate("%dd.%mm.%yyyy-%hh.%ii.%ss", Date()) + ".log", #PB_File_BOM) ;neue Textdatei erstellen
+          ;WriteStringN(#log, "🛈 " + TimeDateMS() + ": Scan gestartet")
+          Loggen(#info, "Scan gestartet mit folgenden Einstellungen:")
+          Loggen(#info, "Scan-Verfahren: " + GetGadgetText(ScVc))
+          Loggen(#info, "Anfang Scan-Area: X" + GGT(ASAx) + " Y" + GGT(ASAy) + " Z" + GGT(ASAz))
+          Loggen(#info, "Ende Scan-Area: X" + GGT(ESAx) + " Y" + GGT(ESAy) + " Z" + GGT(ESAz))
+          Loggen(#info, "Scan-Auflösung: X" + GGT(SAx) + " Y" + GGT(SAy) + " Z" + GGT(SAz))
+          Loggen(#info, "Homing vor Scan: " + GGS(HvS))
+          Loggen(#info, "Scanfehler erkennen: " + GGS(SFe))
+          Loggen(#info, "Mäander Scan: " + GGS(MaS))
+          Loggen(#info, "Achsenreihenfolge: " + GGT(ARFc))
+        EndIf
         ;Vorbereiten
         StatusBarText(0, 2, "Scan gestartet!")
         If GetGadgetState(HvS) ;Homing vor Scan
+          Loggen(#info, "Homing vor Scan")
           Homing(0)
         EndIf
         If GetGadgetState(mGs) ;max. Geschw. senden
+          Loggen(#info, "max. Geschw. senden")
           maxGeschwEinstellen(0)
         EndIf
         If GetGadgetState(mBs) ;max. Beschl. senden
+          Loggen(#info, "max. Beschl. senden")
           maxBeschlEinstellen(0)
         EndIf
         ;zum Scan-Anfang fahren
         ;zuerst mit Z ganz rauf
+        Loggen(#info, "mit Z ganz rauf")
         absKrd.f(#z) = ValF(GetGadgetText(ESAz))
         move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
 
         ;dann mit X und Y zum Anfang Scan-Area
+        Loggen(#info, "mit X unc Y zum Anfang Scan-Area")
         absKrd.f(#x) = ValF(GetGadgetText(ASAx))
         absKrd.f(#y) = ValF(GetGadgetText(ASAy))
         move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
 
         ;und mit Z auch noch zum Anfang Scan-Area
+        Loggen(#info, "mit Z zum Anfang Scan-Area")
         absKrd.f(#z) = ValF(GetGadgetText(ASAz))
         move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
         
         ;Koordinaten auf Null setzen:
+        Loggen(#info, "Koordinaten auf Null setzen")
         SendRec2(#set_position + " X0 Y0 Z0")
         ;die absoluten Koordinaten sind nun in absKrd.f() gespeichert
         ;von nun an für das Scanen relativ zu Anfang Scan-Area
@@ -299,7 +334,7 @@ Procedure Scannen()
         ;oberer Z ab relativ Anfang Scan-Area (Scan-Area Höhe):
         Protected SAHz.f = (ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz)))
         relKrd.f(#z) = SAHz.f ;der rel. Koordinaten den Startwert für oben geben
-        WriteStringN(0, "#Maximale Hoehe: "+StrF(SAHz.f, 2)+"mm")
+        WriteStringN(#dat, "#Maximale Hoehe: "+StrF(SAHz.f, 2)+"mm")
         ;Bestimme, welche Achse die "äußere" (langsame) und welche die "innere" (schnelle) ist
         If OrderXY.b
           OuterMax = MaxX.i : InnerMax = MaxY.i
@@ -316,6 +351,7 @@ Procedure Scannen()
             If GetToolBarButtonState(0, #Stop)
               SetToolBarButtonState(0, #Stop, #False)
               SetToolBarButtonState(0, #Start, #False)
+              Loggen(#info, "Scan gestopt")
               Break 2 ; Verlässt beide Schleifen (i und j) sofort
             EndIf
             ;3. PAUSE Prüfung
@@ -346,6 +382,7 @@ Procedure Scannen()
             EndIf
             x.f = CurrentX.i * ValF(GetGadgetText(SAx))
             y.f = CurrentY.i * ValF(GetGadgetText(SAy))
+            Loggen(#info, "Scanne Punkt " + Str(Fortschritt.i+1) + "/" + GetGadgetText(ASPs))
             Select GetGadgetState(ScVc) ;Scan-Verfahren
               Case 0 ;Jeden Punkt abtasten mit G40
                 ScanData.f(CurrentInner.i) = ScanG30(x.f, y.f, SAHz.f)
@@ -359,6 +396,7 @@ Procedure Scannen()
             StatusBarProgress(0, 1, Fortschritt.i, #PB_StatusBar_Raised,
                               0, Val(GetGadgetText(ASPs)))
             StatusBarText(0, 2, "Scanne Punkt " + Str(Fortschritt.i) + "/" + GetGadgetText(ASPs))
+            ;Loggen(#info, "Scanne Punkt " + Str(Fortschritt.i) + "/" + GetGadgetText(ASPs))
             ;Restdaueranzeige aktualisieren:
             ;ASPs = Anzahl Scan-Punkte
             Protected abgelaufeneSekunden.f = ElapsedMilliseconds()/1000 - startSekunden.f
@@ -367,40 +405,37 @@ Procedure Scannen()
             SetGadgetText(EZs, KonvertiereZuZeit(verbleibendeSekunden.f))
           Next j.i
           ;hier Daten speichern ausserhalb der inneren Schleife:
-          If Not IsFile(0)
+          If Not IsFile(#dat)
             ;an bestehende Textdatei anfügen
-            OpenFile(0, GetGadgetText(DNs), #PB_File_Append)
+            OpenFile(#dat, GetGadgetText(DNs), #PB_File_Append)
           EndIf
           For k.i = 0 To InnerMax.i
             If Not k.i = InnerMax.i
-              WriteString(0, StrF(ScanData.f(k.i), 2) + " ")
+              WriteString(#dat, StrF(ScanData.f(k.i), 2) + " ")
             Else
-              WriteStringN(0, StrF(ScanData.f(k.i), 2))
+              WriteStringN(#dat, StrF(ScanData.f(k.i), 2))
             EndIf
           Next k.i
           ;Datei geöffnet lassen mit Flush:
           If GetGadgetState(SpVc) = 1
-            FlushFileBuffers(0)
+            FlushFileBuffers(#dat)
           EndIf
           ;Datei jedesmal schliessen:
           If GetGadgetState(SpVc) = 2
-            CloseFile(0)
+            CloseFile(#dat)
           EndIf
           ;OpenSCAD Fenster aktualisieren:
           ;funktioniert nur mit SpVc = 2 (Datei jedesmal schliessen)
           If GetGadgetState(VAFc)
             OriginalName$ = GetGadgetText(DNs)
             DateiName$ = ReplaceEndung(OriginalName$, "scad")
-            If OpenFile(1, DateiName$, #PB_File_Append)
-              ;Wir schreiben optional einen kleinen Kommentar ans Ende, 
-              ;um sicherzugehen, dass Windows die Änderung registriert.
-              WriteStringN(1, "//Last Update: " + FormatDate("%hh:%ii:%ss", Date()))
-              CloseFile(1)
-              EndIf
+            ;Kommentar in Datei schreiben, Funktion in ProzedurenGUI.pbi
+            UpdateSCADTimestamp(DateiName$)
           EndIf
           ;wenn "Oberfläche abfahren mit M119" oder "Kombiniert" UND NICHT "Mäander-Scan":
           If GetGadgetState(ScVc) > 0 And Not MeanderScan.b
             ;auf obere Höhe fahren damit beim Zurückfahren nicht touchiert wird:
+            Loggen(#info, "auf obere Höhe fahren")
             move(x.f, y.f, SAHz.f)
           EndIf
         Next i.i
@@ -408,16 +443,21 @@ Procedure Scannen()
         ;Ende
         SetToolBarButtonState(0, #Start, #False)
         StatusBarText(0, 2, "Scan beendet!")
-        If IsFile(0)
-          CloseFile(0)
+        Loggen(#info, "Scan beendet")
+        If IsFile(#dat)
+          CloseFile(#dat)
         EndIf
         ;auf die Scan-Area Höhe fahren
+        Loggen(#info, "mit Z auf Scan-Area Höhe fahren")
         move(x.f, y.f, SAHz.f)
         ;mit X und Y auf 0
+        Loggen(#info, "mit X und Y auf Null fahren")
         move(0, 0, SAHz.f)
         ;und runter an den Anfang Scan-Area:
+        Loggen(#info, "mit Z an den Anfang Scan-Area fahren")
         move(0, 0, 0)
         ;wieder absolute Koordinaten:
+        Loggen(#info, "auf absolute Koordinaten setzen")
         SendRec2(#set_position +
                  " X" + StrF(absKrd.f(#x), 2) +
                  " Y" + StrF(absKrd.f(#y), 2) +
@@ -425,6 +465,13 @@ Procedure Scannen()
         SetGadgetText(APx, StrF(absKrd.f(#x), 2))
         SetGadgetText(APy, StrF(absKrd.f(#y), 2))
         SetGadgetText(APz, StrF(absKrd.f(#z), 2))
+        If IsFile(#log)
+          CloseFile(#log)
+        EndIf
+        ;i.i kann bei einem Abbruch auch gleich OuterMax.i sein:
+        If Melodie And (i.i > OuterMax.i)
+          PlayNadirScanLong()
+        EndIf
       Else
         StatusBarText(0, 2, "Konnte Datei nicht erstellen!")
       EndIf
@@ -436,8 +483,8 @@ Procedure Scannen()
 EndProcedure
 
 ; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 436
-; FirstLine = 397
-; Folding = -------
+; CursorPosition = 269
+; FirstLine = 263
+; Folding = --------
 ; EnableXP
 ; DPIAware
