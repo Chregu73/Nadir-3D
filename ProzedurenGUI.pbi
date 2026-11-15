@@ -319,7 +319,11 @@ Procedure ErzeugeSCAD(EventType)
     WriteStringN(#scad, "y_scale = "+GetGadgetText(SAy)+";")
     WriteStringN(#scad, "z_scale = 1;")
     WriteStringN(#scad, "")
-    WriteStringN(#scad, "difference() {")
+    ;neu: intersection() statt difference(), sonst kann nicht rendern:
+    ;WriteStringN(#scad, "difference() {")
+    WriteStringN(#scad, "intersection() {")
+    ;und das noch dass es sauber anzeigt:
+    WriteStringN(#scad, "render(convexity = 4)")
     Select GetGadgetState(ARFc)
       Case 0 ;Zuerst X-Achse, dann Y-Achse
         WriteStringN(#scad, "  rotate([0,0,0])")
@@ -330,9 +334,11 @@ Procedure ErzeugeSCAD(EventType)
     EndSelect
     WriteStringN(#scad, "  scale([x_scale, y_scale, z_scale])")
     WriteStringN(#scad, "  surface(file = "+#DOUBLEQUOTE$+"surface.dat"+
-                    #DOUBLEQUOTE$+", center = false);")
-    WriteStringN(#scad, "  translate([0,0,-50])")
-    WriteStringN(#scad, "  cube([500, 500, 100], center=true);")
+                        #DOUBLEQUOTE$+", center = false);")
+    ;der Quader muss jetzt natürlich nach oben schauen:
+    ;WriteStringN(#scad, "  translate([0,0,-50])")
+    WriteStringN(#scad, "  translate([0,0,100])")
+    WriteStringN(#scad, "  cube([500,500,200], center=true);")
     WriteStringN(#scad, "}")
     WriteStringN(#scad, "")
     CloseFile(#scad)
@@ -442,7 +448,7 @@ Procedure.s SendRec(text.s, wiederholen.c = 2000)
         If FindString(Ergebnis.s, "ok" + NZ$, 1, #PB_String_CaseSensitive)
           wiederholen.c = 0
         EndIf
-        Debug wiederholen
+        ;Debug wiederholen
       Wend
       FreeMemory(*Puffer)
       ;SetGadgetText(EMPFs, Ergebnis.s)
@@ -740,20 +746,27 @@ Procedure StringGadgetVerifizieren(EventGadget, EventType)
   Select EventType
     ;TextGadget hat Fokus verloren
     Case #PB_EventType_LostFocus
-      If EventGadget = APx Or EventGadget = APy Or EventGadget = APz Or EventGadget = ASAx Or
-         EventGadget = ASAy Or EventGadget = ASAz Or EventGadget = ESAx Or EventGadget = ESAy Or
-         EventGadget = ESAz Or EventGadget = GSAx Or EventGadget = GSAy Or EventGadget = GSAz Or
-         EventGadget = SAx Or EventGadget = SAy Or EventGadget = SAz Or EventGadget = OSx Or
-         EventGadget = OSy Or EventGadget = OSz Or EventGadget = mGx Or EventGadget = mGy Or
-         EventGadget = mGz
-        SetGadgetText(EventGadget, StrF(ValF(GetGadgetText(EventGadget)), 2))
-      EndIf
+      Select EventGadget
+        Case APx, APy, APz, ASAx, ASAy, ASAz, ESAx, ESAy, ESAz, GSAx, GSAy, GSAz, 
+             SAx, SAy, SAz, OSx, OSy, OSz, mGx, mGy, mGz
+          SetGadgetText(EventGadget, StrF(ValF(GetGadgetText(EventGadget)), 2))
+      EndSelect
+      ;Alt---v Neu---^
+;       If EventGadget = APx Or EventGadget = APy Or EventGadget = APz Or EventGadget = ASAx Or
+;          EventGadget = ASAy Or EventGadget = ASAz Or EventGadget = ESAx Or EventGadget = ESAy Or
+;          EventGadget = ESAz Or EventGadget = GSAx Or EventGadget = GSAy Or EventGadget = GSAz Or
+;          EventGadget = SAx Or EventGadget = SAy Or EventGadget = SAz Or EventGadget = OSx Or
+;          EventGadget = OSy Or EventGadget = OSz Or EventGadget = mGx Or EventGadget = mGy Or
+;          EventGadget = mGz
+;         SetGadgetText(EventGadget, StrF(ValF(GetGadgetText(EventGadget)), 2))
+;       EndIf
       ;wenn in Gadget Anfang/Ende Scan-Area
       If EventGadget = ASAx Or EventGadget = ASAy Or EventGadget = ASAz Or EventGadget = ESAx Or
          EventGadget = ESAy Or EventGadget = ESAz Or EventGadget = SAx Or EventGadget = SAy
         anzahlPunkte.f = (((ValF(GetGadgetText(ESAx)) - ValF(GetGadgetText(ASAx))) / ValF(GetGadgetText(SAx))) + 1)
         anzahlPunkte.f * (((ValF(GetGadgetText(ESAy)) - ValF(GetGadgetText(ASAy))) / ValF(GetGadgetText(SAy))) + 1)
-        SetGadgetText(ASPs, StrF(anzahlPunkte.f))
+        ;hier sollte Integer sein:
+        SetGadgetText(ASPs, StrF(anzahlPunkte.f, 0))
         erwarteteZeit.f = (ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))) * anzahlPunkte.f
         ;hier ist die erwartete Zeit = der Scanhöhe als Sekunden, evtl. mit Korrekturfaktor:
         erwarteteZeit.f * 1.5
@@ -764,10 +777,9 @@ Procedure StringGadgetVerifizieren(EventGadget, EventType)
         SetGadgetText(GSAz, StrF((ValF(GetGadgetText(ESAz)) - ValF(GetGadgetText(ASAz))), 2))
       EndIf
       AddShortcuts(ShortCuts)
-      Debug "AddShortCuts()"
     ;Fokus erhalten
     Case #PB_EventType_Focus
-      Debug "RemoveShortCuts()"
+      ;Debug "RemoveShortCuts()"
       RemoveShortcuts()
   EndSelect
 EndProcedure
@@ -894,9 +906,9 @@ Procedure ScanAufloesung100(EventType)
 EndProcedure
 
 
-; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 758
-; FirstLine = 678
+; IDE Options = PureBasic 6.41 (Windows - x64)
+; CursorPosition = 324
+; FirstLine = 308
 ; Folding = -----9---
 ; EnableXP
 ; DPIAware

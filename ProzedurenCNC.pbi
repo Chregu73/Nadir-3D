@@ -71,16 +71,38 @@ Procedure FahrenNachAktuellePosition(EventType)
   ;move(ValF(GetGadgetText(APx)), ValF(GetGadgetText(APy)), ValF(GetGadgetText(APz)))
 EndProcedure
 
+Procedure.f MaxF(a.f, b.f)
+  If a > b
+    ProcedureReturn a
+  Else
+    ProcedureReturn b
+  EndIf
+EndProcedure
+
+;Hier immer zuerst auf Höhe fahren und dann X/Y:
 Procedure FahrenNachAnfangScanArea(EventType)
+  ;die grössere Höhe wird angefahren:
+  absKrd.f(#z) = MaxF(ValF(GetGadgetText(ASAz)), ValF(GetGadgetText(ESAz)))
+  move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
+  ;nur X/Y fahren:
   absKrd.f(#x) = ValF(GetGadgetText(ASAx))
   absKrd.f(#y) = ValF(GetGadgetText(ASAy))
+  move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
+  ;zum Zielpunkt fahren:
   absKrd.f(#z) = ValF(GetGadgetText(ASAz))
   move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
 EndProcedure
 
+;Und hier das Gleiche wie oben:
 Procedure FahrenNachEndeScanArea(EventType)
+  ;die grössere Höhe wird angefahren:
+  absKrd.f(#z) = MaxF(ValF(GetGadgetText(ASAz)), ValF(GetGadgetText(ESAz)))
+  move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
+  ;nur X/Y fahren:
   absKrd.f(#x) = ValF(GetGadgetText(ESAx))
   absKrd.f(#y) = ValF(GetGadgetText(ESAy))
+  move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
+  ;zum Zielpunkt fahren:
   absKrd.f(#z) = ValF(GetGadgetText(ESAz))
   move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
 EndProcedure
@@ -150,7 +172,11 @@ Procedure ScanVonForm(EventType)
 EndProcedure
 
 Procedure Auf(EventType)
-  SendRec2(#move + " Z" + GetGadgetText(ESAz))
+  ;das fährt relativ -> Koordinaten stimmen nicht mehr!
+  ;SendRec2(#move + " Z" + GetGadgetText(ESAz))
+  ;besser:
+  absKrd.f(#z) = ValF(GetGadgetText(ESAz))
+  move(absKrd.f(#x), absKrd.f(#y), absKrd.f(#z))
 EndProcedure
 
 Procedure EndschalterAbfragen(EventType)
@@ -245,10 +271,12 @@ EndMacro
 Procedure.s GGS(Gadget)
   If GetGadgetState(Gadget) = #PB_Checkbox_Checked
     ;ProcedureReturn "Ja"
-    ProcedureReturn Chr($E2) + Chr($98) + Chr($91) ;Checkbox checked
+    ;ProcedureReturn Chr($E2) + Chr($98) + Chr($91) ;Checkbox checked, geht nicht
+    ProcedureReturn "☑"
   Else
     ;ProcedureReturn "Nein"
-    ProcedureReturn Chr($E2) + Chr($98) + Chr($90) ;Checkbox unchecked
+    ;ProcedureReturn Chr($E2) + Chr($98) + Chr($90) ;Checkbox unchecked
+    ProcedureReturn "☐"
   EndIf
 EndProcedure
 
@@ -482,9 +510,9 @@ Procedure Scannen()
   EndIf
 EndProcedure
 
-; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 269
-; FirstLine = 263
+; IDE Options = PureBasic 6.41 (Windows - x64)
+; CursorPosition = 178
+; FirstLine = 149
 ; Folding = --------
 ; EnableXP
 ; DPIAware

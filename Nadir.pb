@@ -1,4 +1,5 @@
 ﻿;Scannt mit dem 3D-Taster
+;Zuletzt editiert: 14.11.2026
 
 ;interne Variablen:
 #x = 0
@@ -311,7 +312,7 @@ Repeat
           ;Debug EventType()
           Select EventGadget
             Case EditableGadgets
-              Debug EventGadget
+              ;Debug EventGadget
               StringGadgetVerifizieren(EventGadget, EventType())
           EndSelect
       EndSelect
@@ -346,9 +347,8 @@ AnimateWindow_(WindowID(WindowScanner),2000,#AW_BLEND|#AW_HIDE)
 ;AnimateWindow_(WindowID(WindowScanner),500,#AW_VER_POSITIVE|#AW_HIDE)
 End
 
-; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 182
-; FirstLine = 161
+; IDE Options = PureBasic 6.41 (Windows - x64)
+; CursorPosition = 2
 ; Folding = -
 ; EnableXP
 ; DPIAware
